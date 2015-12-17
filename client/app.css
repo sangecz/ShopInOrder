@@ -1,0 +1,58 @@
+.list {
+    list-style: none outside none;
+    margin: 0.5em 0;
+    padding: 0;
+}
+
+.item {
+    font-size: 1.2em;
+     width: 300px;
+     padding: 5px 0px;
+     margin: 0px 0;
+     border-bottom: 1px solid #e2e2e2;
+     border-left: 1px solid #e2e2e2;
+     border-right: 1px solid #e2e2e2;
+    border-top: 1px solid #e2e2e2;
+
+    /*border-radius: 5px;*/
+     background-color: #ffffff;
+
+     /*font-size: 1.1em;*/
+     text-align: center;
+     cursor: move;
+ }
+.item-crossed {
+    font-size: 1.2em;
+    text-decoration: line-through;
+    width: 300px;
+    padding: 5px 0px;
+    margin: 0px 0;
+    border-bottom: 1px solid #e2e2e2;
+    border-left: 1px solid #e2e2e2;
+    border-right: 1px solid #e2e2e2;
+    border-top: 1px solid #e2e2e2;
+
+    /*border-radius: 5px;*/
+    background-color: #ffffff;
+
+    /*font-size: 1.1em;*/
+    text-align: center;
+    cursor: move;
+}
+
+#list-container {
+    margin-left: 1em;
+    width: 300px;
+}
+
+p.crossed {
+    margin: 0;
+    color: gray;
+    font-size: 1em;
+}
+
+table.list-item td {
+    text-align: left;
+    padding-left: 0.5em;
+}
+

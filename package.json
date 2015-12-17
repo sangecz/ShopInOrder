@@ -1,0 +1,20 @@
+{
+  "name": "shopinorder",
+  "version": "1.0.0",
+  "description": "Shopping lists' items ordered by particular shop layout.",
+  "main": "server.js",
+  "dependencies": {
+    "angular": "^1.4.8",
+    "angular-route": "^1.4.8",
+    "angular-ui-sortable": "^0.13.4",
+    "express": "^4.13.3",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/server.js"
+  },
+  "author": "Petr Marek",
+  "license": "ISC"
+}

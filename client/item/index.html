@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+   <head>
+       <title>{{texts.title}}</title>
+       <link rel="stylesheet" href="../app.css">
+   </head>
+
+
+   <body>
+       <script src="../lib/jquery.all.min.js"></script>
+       <script src="/scripts/angular/angular.js"></script>
+       <script src="/scripts/angular-ui-sortable/dist/sortable.js"></script>
+
+       <div ng-app="sio" ng-controller = "ItemController" >
+           <h3>{{texts.item.title}}</h3>
+
+           <form ng-submit="addList()">
+               <input name="newList" ng-model="newList" type="text" />
+               <input type="submit" style="position: absolute; left: -9999px"/>
+           </form>
+
+           <form ng-submit="deleteAll()">
+               <input type="submit" value="{{texts.deleteCrossed}}"/>
+           </form>
+
+           <ul ui-sortable="sortableOptions"  ng-model="items" class="list">
+               <li ng-repeat="item in items" class="item">
+                   <table width="100%">
+                       <tr>
+                           <td width="20%" ng-click="editList(item)">edit</td>
+                           <td width="60%" ng-click="openList(item)">{{ item }}</td>
+                           <td width="20%" ng-click="crossList(item)">x</td>
+                       </tr>
+                   </table>
+
+               </li>
+           </ul>
+           <ul ui-sortable="sortableOptions"  ng-model="crossedItems" class="list">
+               <li ng-repeat="item in crossedItems" class="item-crossed">
+                   <table width="100%">
+                       <tr>
+                           <td width="20%" ng-click="editList(item)">edit</td>
+                           <td width="60%" ng-click="openList(item)">{{ item }}</td>
+                           <td width="20%" ng-click="uncrossList(item)">x</td>
+                       </tr>
+                   </table>
+
+               </li>
+           </ul>
+
+       </div>
+
+       <script src="../util/locale.en.js"></script>
+       <script src="../client.js"></script>
+       <script src="../item/item.controller.js"></script>
+   </body>
+</html>

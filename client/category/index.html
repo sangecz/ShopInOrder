@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+   <head>
+       <title>{{texts.title}}</title>
+       <link rel="stylesheet" href="../app.css">
+   </head>
+
+
+   <body>
+       <script src="/scripts/angular/angular.js"></script>
+
+       <div id="list-container" ng-app="sio" ng-controller = "CategoryController" >
+
+           <h3>{{texts.category.title}}</h3>
+
+           <ul class="list">
+               <li ng-repeat="c in category">
+                   <table class="item" width="100%">
+                       <tr>
+                           <td width="10%" >{{ c.id }}</td>
+                           <td width="20%" >{{ c.name }}</td>
+                           <td width="70%" >{{ c.desc }}</td>
+                       </tr>
+                   </table>
+               </li>
+           </ul>
+
+       </div>
+
+       <script src="../util/locale.en.js"></script>
+       <script src="../util/config.js"></script>
+       <script src="../client.js"></script>
+       <script src="../category/category.controller.js"></script>
+   </body>
+</html>
