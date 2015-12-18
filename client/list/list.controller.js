@@ -1,7 +1,3 @@
-/**
- * Created by sange on 17/12/15.
- */
-
 
 app.controller("ListController", function ListController($scope, $location, $http) {
     $scope.items = [
@@ -51,8 +47,8 @@ app.controller("ListController", function ListController($scope, $location, $htt
     };
 
     $scope.editList = function() {
-        $location.path('/list/edit.list.html');
         console.log("editList");
+        $location.path('/list/edit');
     };
 
     $scope.crossList = function(list){

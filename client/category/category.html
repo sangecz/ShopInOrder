@@ -1,0 +1,26 @@
+<header class="hero-unit" id="banner">
+    <h3>{{texts.category.title}}</h3>
+</header>
+
+<div class="container">
+
+   <ul class="list">
+       <li ng-repeat="c in category">
+           <table class="item" width="100%">
+               <tr>
+                   <td width="10%" >{{ c.id }}</td>
+                   <td width="20%" >{{ c.name }}</td>
+                   <td width="70%" >{{ c.desc }}</td>
+               </tr>
+           </table>
+       </li>
+   </ul>
+
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <p>©2015 - Petr Marek</p>
+    </div>
+</footer>
+

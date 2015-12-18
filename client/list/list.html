@@ -1,0 +1,54 @@
+<header class="hero-unit" id="banner">
+    <h3>{{texts.list.title}}</h3>
+</header>
+
+<div class="container">
+
+   <form class="form" ng-submit="addList()">
+       <input name="newList" ng-model="newList" type="text"
+              placeholder="{{texts.list.add}}" />
+       <input type="submit" style="position: absolute; left: -9999px"/>
+   </form>
+
+   <ul ui-sortable="sortableOptions"  ng-model="items" class="list">
+       <li ng-repeat="item in items" class="item">
+           <table class="list-item" width="100%">
+               <tr>
+                   <td width="70%" ng-click="openList(item)">{{ item.name }}</td>
+                   <td width="10%" >{{ item.count }}</td>
+                   <td width="10%" ng-click="editList(item)">edit</td>
+                   <td width="10%" ng-click="crossList(item)">x</td>
+               </tr>
+           </table>
+
+       </li>
+   </ul>
+
+   <p ng-show="crossedItems.length > 0" class="crossed">{{texts.crossed}}</p>
+
+   <ul ui-sortable="sortableOptions"  ng-model="crossedItems" class="list">
+       <li ng-repeat="item in crossedItems" class="item-crossed">
+           <table class="list-item" width="100%">
+               <tr>
+                   <td width="70%" ng-click="openList(item)">{{ item.name }}</td>
+                   <td width="10%" >{{ item.count }}</td>
+                   <td width="10%" ng-click="editList(item)">edit</td>
+                   <td width="10%" ng-click="uncrossList(item)">x</td>
+               </tr>
+           </table>
+
+       </li>
+   </ul>
+
+   <form class="form" ng-show="crossedItems.length > 0" ng-submit="deleteAll()">
+       <input type="submit" value="{{texts.deleteCrossed}}"/>
+   </form>
+
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <p>©2015 - Petr Marek</p>
+    </div>
+</footer>
+

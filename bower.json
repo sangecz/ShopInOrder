@@ -1,0 +1,28 @@
+{
+  "name": "shopinorder",
+  "description": "Shopping lists' items ordered by particular shop layout.",
+  "main": "server.js",
+  "authors": [
+    "Petr Marek"
+  ],
+  "license": "ISC",
+  "moduleType": [
+    "node"
+  ],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-route": "~1.4.8",
+    "angular-resource": "~1.4.8",
+    "angular": "~1.4.8",
+    "jquery": "~2.1.4",
+    "jquery-ui": "jqueryui#~1.11.4"
+  }
+}

@@ -11,9 +11,10 @@ var category = require('./server/category');
 
 // serve static content
 app.use(express.static(path.join(__dirname, 'client')));
-app.use('/scripts', express.static(__dirname + '/node_modules/'));
+app.use('/node_modules', express.static(__dirname + '/node_modules/'));
+app.use('/bower_components', express.static(__dirname + '/bower_components/'));
 app.get('/', function (req, res) {
-    res.sendFile( __dirname + "/" + "client/list/index.html" );
+    res.sendFile( __dirname + "/" + "client/list/list.html" );
 });
 
 app.get(MY_API + '/category', category.index);
