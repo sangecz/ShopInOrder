@@ -4,17 +4,16 @@
 
 <div class="container">
 
-    <ul class="list">
-        <li ng-repeat="c in category">
-            <table class="item" width="100%">
-                <tr>
-                    <td width="10%" >{{ c.id }}</td>
-                    <td width="20%" >{{ c.name }}</td>
-                    <td width="70%" >{{ c.desc }}</td>
-                </tr>
-            </table>
-        </li>
-    </ul>
+    <form ng-submit="save()">
+        <label>{{texts.lbl.name}} {{edittedItem.name}}</label>
+        <input name="name" type="text" ng-model="edittedItem.name" placeholder="{{edittedItem.name}}"/>
+        <label>{{texts.lbl.desc}}</label>
+        <input name="desc" type="text" ng-model="edittedItem.desc" placeholder="{{edittedItem.desc}}"/>
+        <label>{{texts.lbl.layout}}</label>
+        <input name="layout" type="text" ng-model="edittedItem.layout" placeholder="{{edittedItem.layout}}"/>
+
+        <input value="{{texts.lbl.submit}}" type="submit"/>
+    </form>
 
 </div>
 

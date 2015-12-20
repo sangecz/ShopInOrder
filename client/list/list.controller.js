@@ -1,5 +1,16 @@
 
-app.controller("ListController", function ListController($scope, $location, $http) {
+app.service('sharedProperties', function () {
+    var property = null;
+
+    return {
+        getProperty: function () {
+            return property;
+        },
+        setProperty: function(value) {
+            property = value;
+        }
+    };
+}).controller("ListController", function ListController($scope, $location, sharedProperties) {
     $scope.items = [
         {name: "One", count: 4},
         {name: "Two", count: 33},
@@ -8,6 +19,7 @@ app.controller("ListController", function ListController($scope, $location, $htt
     $scope.crossedItems = [];
     $scope.newList = '';
     $scope.texts = myTexts;
+    $scope.edittedItem = sharedProperties.getProperty() != null ? sharedProperties.getProperty()  : {};
 
     var self = this;
 
@@ -46,9 +58,27 @@ app.controller("ListController", function ListController($scope, $location, $htt
         $scope.crossedItems = [];
     };
 
-    $scope.editList = function() {
-        console.log("editList");
+    $scope.editList = function(list) {
+        // edit start
+        $scope.edittedItem = list;
+        $scope.edittedItem.name = list.name;
+        $scope.edittedItem.desc = list.desc;
+        $scope.edittedItem.layout = list.layout;
+        sharedProperties.setProperty(list);
         $location.path('/list/edit');
+    };
+
+    $scope.save = function(item) {
+        // edit body
+        // TODO
+
+        console.log($scope.edittedItem.name);
+        console.log($scope.edittedItem.desc);
+        console.log($scope.edittedItem.layout);
+
+        // edit end
+        $location.path('/list');
+        $scope.edittedItem = {};
     };
 
     $scope.crossList = function(list){

@@ -7,6 +7,14 @@ var myTexts = {
     deleteCrossed: 'Delete crossed',
     crossed: 'Crossed:',
 
+    lbl: {
+        name: 'Name',
+        desc: 'Description',
+        layout: 'Layout',
+        category: 'Category',
+        submit: 'Submit'
+    },
+
     list: {
         title: 'Shopping Lists',
         add: 'And new list',
