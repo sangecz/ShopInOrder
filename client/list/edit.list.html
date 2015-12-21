@@ -1,25 +1,24 @@
-<header class="hero-unit" id="banner">
-    <h3>{{texts.list.edit}}</h3>
-</header>
+<div ng-include="'../components/toolbar.edit.html'"></div>
 
-<div class="container">
+<md-content class="container">
 
-    <form ng-submit="save()">
-        <label>{{texts.lbl.name}} {{edittedItem.name}}</label>
-        <input name="name" type="text" ng-model="edittedItem.name" placeholder="{{edittedItem.name}}"/>
-        <label>{{texts.lbl.desc}}</label>
-        <input name="desc" type="text" ng-model="edittedItem.desc" placeholder="{{edittedItem.desc}}"/>
-        <label>{{texts.lbl.layout}}</label>
-        <input name="layout" type="text" ng-model="edittedItem.layout" placeholder="{{edittedItem.layout}}"/>
+    <form>
+        <md-input-container class="md-block">
+            <label>{{texts.lbl.name}}</label>
+            <input ng-model="edittedItem.name" required>
+        </md-input-container>
+        <md-input-container class="md-block">
+            <label>{{texts.lbl.desc}}</label>
+            <input ng-model="edittedItem.desc">
+        </md-input-container>
+        <md-input-container class="md-block">
+            <label>{{texts.lbl.layout}}</label>
+            <md-select ng-model="edittedItem.layoutId">
+                <md-option value="{{l.id}}" ng-repeat="l in layouts">{{l.name}}</md-option>
+            </md-select>
+        </md-input-container>
 
-        <input value="{{texts.lbl.submit}}" type="submit"/>
     </form>
 
-</div>
-
-<footer class="footer">
-    <div class="container">
-        <p>©2015 - Petr Marek</p>
-    </div>
-</footer>
+</md-content>
 

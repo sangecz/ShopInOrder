@@ -1,0 +1,26 @@
+<div ng-include="'../components/toolbar.html'"></div>
+
+<md-content class="container" flex>
+
+    <form name="myForm">
+        <md-input-container class="md-block">
+            <label>{{texts.lbl.email}}</label>
+            <input name="email" type="email" ng-model="user.email" required>
+            <span style="color:red" ng-show="myForm.email.$dirty && myForm.email.$invalid">
+                <span ng-show="myForm.email.$error.required">{{texts.msg.emailRequired}}</span>
+                <span ng-show="myForm.email.$error.email">{{texts.msg.invalidEmail}}</span>
+            </span>
+        </md-input-container>
+        <md-input-container class="md-block">
+            <label>{{texts.lbl.password}}</label>
+            <input name="password" type="password" ng-model="user.password" required>
+            <span style="color:red" ng-show="myForm.user.$dirty && myForm.user.$invalid">
+                <span ng-show="myForm.password.$error.required">{{texts.msg.passwordRequired}}</span>
+            </span>
+        </md-input-container>
+        <md-input-container>
+            <md-button ng-click="login()" class="md-raised">{{texts.lbl.login}}</md-button>
+        </md-input-container>
+    </form>
+
+</md-content>

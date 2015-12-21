@@ -1,0 +1,46 @@
+
+<div ng-include="'../components/toolbar.edit.html'"></div>
+
+<md-content class="container">
+
+    <md-switch ng-model="data.toggleProp">{{texts.lbl.toggleProp}}</md-switch>
+    <form ng-show="data.toggleProp">
+        <md-input-container class="md-block">
+            <label>{{texts.lbl.shopName}}</label>
+            <input ng-model="edittedItem.name" required>
+        </md-input-container>
+        <md-input-container class="md-block">
+            <label>{{texts.lbl.desc}}</label>
+            <input ng-model="edittedItem.desc">
+        </md-input-container>
+        <md-input-container class="md-block">
+            <label>{{texts.lbl.location}}</label>
+            <input ng-model="edittedItem.location">
+        </md-input-container>
+    </form>
+
+    <md-input-container class="md-block">
+        <label>{{texts.category.add}}</label>
+        <md-select ng-model="category">
+            <md-option value="{{c.id}}" ng-repeat="c in categories"
+                       ng-click="addCategory(c)">{{c.name}}</md-option>
+        </md-select>
+    </md-input-container>
+
+    <ol ui-sortable="sortableOptionsCategory"  ng-model="addedCategories" class="list-ordered">
+        <li ng-repeat="item in addedCategories" class="item">
+            <table class="list-item" width="100%">
+                <tr>
+                    <td width="90%" >{{ item.name }}</td>
+                    <td width="10%" ng-click="deleteCategory(item)">
+                        <md-button class="md-icon-button" aria-label="Delete">
+                            <md-icon md-svg-icon="/img/icons/ic_delete_48px.svg"></md-icon>
+                        </md-button>
+                    </td>
+                </tr>
+            </table>
+
+        </li>
+    </ol>
+
+</md-content>

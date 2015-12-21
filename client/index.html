@@ -3,7 +3,7 @@
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <base href="/">
@@ -13,22 +13,26 @@
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
     <!-- build:css(client) app/vendor.css -->
       <!-- bower:css -->
-
+      <link rel="stylesheet" href="/bower_components/angular-material/angular-material.css" />
+      <link rel="stylesheet" href="/bower_components/angular-material/angular-material.layouts.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
       <!-- endbower -->
     <!-- endbuild -->
     <!-- build:css({.tmp,client}) app/app.css -->
-    <link rel="stylesheet" href="./app.css">
+    <link rel="stylesheet" href="./app.css" />
       <!-- injector:css -->
       <!-- endinjector -->
     <!-- endbuild -->
-  </head>
-  <body ng-app="sio">
+</head>
+<body ng-app="sio">
     <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
 
+
     <!-- Add your site or application content here -->
-    <div ng-view=""></div>
+    <div ng-view="" ng-class="slide"></div>
+
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
     <script>
@@ -50,6 +54,11 @@
       <script src="/bower_components/jquery/dist/jquery.js"></script>
       <script src="/bower_components/jquery-ui/jquery-ui.js"></script>
       <script src="/bower_components/angular/angular.js"></script>
+      <script src="/bower_components/angular-animate/angular-animate.js"></script>
+      <script src="/bower_components/angular-cookies/angular-cookies.js"></script>
+      <script src="/bower_components/angular-aria/angular-aria.js"></script>
+      <script src="/bower_components/angular-messages/angular-messages.js"></script>
+      <script src="/bower_components/angular-material/angular-material.js"></script>
       <script src="/bower_components/angular-resource/angular-resource.js"></script>
       <script src="/bower_components/angular-route/angular-route.js"></script>
       <script src="/node_modules/angular-ui-sortable/dist/sortable.js"></script>
@@ -60,12 +69,12 @@
         <!-- build:js({.tmp,client}) app/app.js -->
         <script src="client.js"></script>
           <!-- injector:js -->
+          <script src="auth/auth.controller.js"></script>
           <script src="util/locale.en.js"></script>
           <script src="util/config.js"></script>
-          <script src="category/category.controller.js"></script>
           <script src="item/item.controller.js"></script>
-          <!--<script src="layout/layout.controller.js"></script>-->
           <script src="list/list.controller.js"></script>
+          <script src="layout/layout.controller.js"></script>
           <!-- endinjector -->
         <!-- endbuild -->
   </body>

@@ -1,0 +1,67 @@
+
+<div ng-include="'../components/toolbar.html'"></div>
+
+<md-content class="container" flex>
+
+    <form ng-submit="addItem()">
+        <md-input-container class="md-block">
+            <label>{{texts.layout.add}}</label>
+            <input ng-model="newItem">
+        </md-input-container>
+        <input type="submit" style="position: absolute; left: -9999px"/>
+    </form>
+
+    <p ng-show="items.length == 0" class="crossed">{{texts.empty}}</p>
+
+    <ul ui-sortable="sortableOptions"  ng-model="items" class="list">
+        <li ng-repeat="item in items" class="item">
+            <table class="list-item" width="100%">
+                <tr>
+                    <td width="80%" ng-click="openItem(item)">{{ item.name }}</td>
+                    <td width="10%" ng-click="editItem(item)">
+                        <md-button class="md-icon-button" aria-label="Edit">
+                            <md-icon md-svg-icon="/img/icons/ic_edit_48px.svg"></md-icon>
+                        </md-button>
+                    </td>
+                    <td width="10%" ng-click="crossItem(item)">
+                        <md-button class="md-icon-button" aria-label="Cross">
+                            <md-icon md-svg-icon="/img/icons/ic_cancel_48px.svg"></md-icon>
+                        </md-button>
+                    </td>
+                </tr>
+                <!--<tr>-->
+                    <!--<td colspan="3">-->
+                        <!--<span class="item-desc">{{item.desc}}</span>-->
+                    <!--</td>-->
+                <!--</tr>-->
+            </table>
+
+        </li>
+    </ul>
+
+    <md-button style="float: right;" ng-show="crossedItems.length > 0" ng-click="deleteAll()"
+               class="md-raised">{{texts.deleteCrossed}}</md-button>
+
+    <p ng-show="crossedItems.length > 0" class="crossed">{{texts.crossed}}</p>
+    <div style="clear: both;"></div>
+
+
+    <ul ui-sortable="sortableOptions"  ng-model="crossedItems" class="list">
+        <li ng-repeat="item in crossedItems" class="item-crossed">
+            <table class="list-item" width="100%">
+                <tr>
+                    <td width="90%" >{{ item.name }}</td>
+                    <td width="10%" ng-click="uncrossItem(item)">
+                        <md-button class="md-icon-button" aria-label="Uncross">
+                            <md-icon md-svg-icon="/img/icons/ic_cancel_48px.svg"></md-icon>
+                        </md-button>
+                    </td>
+                </tr>
+            </table>
+
+        </li>
+    </ul>
+
+</md-content>
+
+
