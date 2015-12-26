@@ -1,47 +1,77 @@
-<header class="hero-unit" id="banner">
-    <h3>{{texts.item.title}}</h3>
-</header>
+<div ng-include="'../components/toolbar.items.html'"></div>
 
-<div class="container">
+<md-content class="container" flex>
 
-   <form ng-submit="addList()">
-       <input name="newList" ng-model="newList" type="text" />
-       <input type="submit" style="position: absolute; left: -9999px"/>
-   </form>
+    <form ng-submit="addItem()">
+        <div layout-gt-xs="row">
+            <md-input-container class="md-block" flex-gt-sm>
+                <label>{{texts.item.add}}</label>
+                <input ng-model="newItem.name">
+            </md-input-container>
+            <md-input-container class="md-block" flex-gt-sm>
+                <label>{{texts.category.with}}</label>
+                <md-select ng-model="newItem.categoryId">
+                    <md-option value="{{c.id}}" ng-repeat="c in categories">{{c.name}}</md-option>
+                </md-select>
+            </md-input-container>
+            <md-input-container class="md-block" flex-gt-sm>
+                <md-button ng-click="addItem()"
+                           class="md-raised">{{texts.lbl.add}}</md-button>
+            </md-input-container>
+        </div>
+        <input style="position: absolute; left: -9999px;;" type="submit" value="{{texts.lbl.add}}"/>
+    </form>
 
-   <form ng-submit="deleteAll()">
-       <input type="submit" value="{{texts.deleteCrossed}}"/>
-   </form>
+    <p ng-show="items.length == 0" class="crossed">{{texts.empty}}</p>
 
-   <ul ui-sortable="sortableOptions"  ng-model="items" class="list">
-       <li ng-repeat="item in items" class="item">
-           <table width="100%">
-               <tr>
-                   <td width="20%" ng-click="editList(item)">edit</td>
-                   <td width="60%" ng-click="openList(item)">{{ item }}</td>
-                   <td width="20%" ng-click="crossList(item)">x</td>
-               </tr>
-           </table>
+    <md-list>
+        <div ng-repeat="cat in itemsOrganized" ng-if="cat.arr.length > 0">
+            <md-subheader class="md-no-sticky md-list-subheader" ng-show="categoryHasChild(cat)">{{cat.name}}</md-subheader>
+            <md-list-item class="md-list-item" ng-repeat="item in cat.arr"
+                          ng-if="item.crossed == false">
+                <table width="100%">
+                    <tr>
+                        <td width="80%" ng-click="editItem(item)">{{ item.name }}</td>
+                        <td width="10%" ng-click="editItem(item)">
+                            <md-button class="md-icon-button" aria-label="Edit">
+                                <md-icon md-svg-icon="/img/icons/ic_edit_48px.svg"></md-icon>
+                            </md-button>
+                        </td>
+                        <td width="10%" ng-click="crossItem(item)">
+                            <md-button class="md-icon-button" aria-label="Cross">
+                                <md-icon md-svg-icon="/img/icons/ic_cancel_48px.svg"></md-icon>
+                            </md-button>
+                        </td>
+                    </tr>
+                </table>
+            </md-list-item>
+            <md-divider ></md-divider>
+        </div>
+    </md-list>
 
-       </li>
-   </ul>
-   <ul ui-sortable="sortableOptions"  ng-model="crossedItems" class="list">
-       <li ng-repeat="item in crossedItems" class="item-crossed">
-           <table width="100%">
-               <tr>
-                   <td width="20%" ng-click="editList(item)">edit</td>
-                   <td width="60%" ng-click="openList(item)">{{ item }}</td>
-                   <td width="20%" ng-click="uncrossList(item)">x</td>
-               </tr>
-           </table>
+    <md-button style="float: right;" ng-show="crossedItemsNum > 0" ng-click="deleteAll()"
+               class="md-raised">{{texts.deleteCrossed}}</md-button>
 
-       </li>
-   </ul>
+    <p ng-show="crossedItemsNum > 0" class="crossed">{{texts.crossed}}</p>
+    <div style="clear: both;"></div>
 
-</div>
+    <md-list ng-show="crossedItemsNum > 0">
+        <div ng-repeat="cat in itemsOrganized" ng-if="cat.arr.length > 0">
+            <md-list-item class="md-list-item-crossed"
+                          ng-repeat="item in cat.arr" ng-if="item.crossed == true">
+                <table width="100%">
+                    <tr>
+                        <td width="90%" >{{ item.name }}</td>
+                        <td width="10%" ng-click="uncrossItem(item)">
+                            <md-button class="md-icon-button" aria-label="Uncross">
+                                <md-icon md-svg-icon="/img/icons/ic_cancel_48px.svg"></md-icon>
+                            </md-button>
+                        </td>
+                    </tr>
+                </table>
+            </md-list-item>
+            <md-divider ></md-divider>
+        </div>
+    </md-list>
 
-<footer class="footer">
-    <div class="container">
-        <p>©2015 - Petr Marek</p>
-    </div>
-</footer>
+</md-content>

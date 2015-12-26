@@ -58,7 +58,7 @@ var app = angular.module("sio", [
             })
             .when('/item/edit', {
                 templateUrl: 'item/edit.item.html',
-                controller: 'ItemController'
+                controller: 'EditItemController'
             })
             .when('/login', {
                 templateUrl: 'auth/login.html',
@@ -71,7 +71,7 @@ var app = angular.module("sio", [
         //$locationProvider.html5Mode(true);
         //$httpProvider.interceptors.push('authInterceptor');
     })
-    .run( function($rootScope, UserService, $location, $cookies, $window) {
+    .run( function($rootScope, UserService, $location, $cookies, $window, $route) {
         $rootScope.$on('$routeChangeStart', function(event, next, current) {
             if ( $cookies.get('token') === undefined ) {
                 // no logged user, we should be going to #login
@@ -82,15 +82,15 @@ var app = angular.module("sio", [
                     $location.path( "/login" );
                 }
             }
-            $rootScope.slide = '';
-            //event button to move backward
+            //$rootScope.slide = '';
+            ////event button to move backward
             $rootScope.back = function() {
-                $rootScope.slide = 'slide-right';
+                //$rootScope.slide = 'slide-right';
                 $window.history.back();
             };
-            //event button item list to move forward
-            $rootScope.next = function() {
-                $rootScope.slide = 'slide-left';
-            }
+            ////event button item list to move forward
+            //$rootScope.next = function() {
+            //    $rootScope.slide = 'slide-left';
+            //};
         });
     });

@@ -2,21 +2,28 @@
 app.controller("LayoutController", function LayoutController($scope, $location, sharedProperties, $http, $mdToast, $cookies) {
     var self = this;
 
-    $scope.edittedItem = sharedProperties.getProperty() != null ? sharedProperties.getProperty().item : $location.path('/layout');
+    self.checkPropreties = function(){
+        if(sharedProperties.getProperty() != null){
+            $scope.edittedItem =  sharedProperties.getProperty().item;
+            $scope.addedCategories = sharedProperties.getProperty() != null ? sharedProperties.getProperty().categories : [];
+
+        } else {
+            $location.path('/layout');
+        }
+    };
+    self.checkPropreties();
 
     $scope.title = myTexts.layout.title;
     $scope.subtitle = myTexts.layout.edit;
 
     $scope.items = [];
-    $scope.addedCategories = sharedProperties.getProperty() != null ? sharedProperties.getProperty().categories : [];
-    self.categoryOrderChanged = false;
-    self.itemOrderChanged = false;
+    self.categoryNeedSync = false;
+    self.layoutNeedSync = false;
 
     // layouts
     self.getLayouts = function(){
         $http.get(myConfig.MY_API + '/layout').then(function(data) {
             $scope.items = data.data;
-            var x = {items: $scope.items};
         });
     };
     self.getLayouts();
@@ -25,8 +32,6 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
     self.getCategories = function(){
         $http.get(myConfig.MY_API + '/category').then(function(data) {
             $scope.categories = data.data;
-            var x = {items: $scope.categories};
-            myCache.save('categories', x, $cookies);
         });
     };
     self.getCategories();
@@ -40,14 +45,14 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
 
     $scope.sortableOptions = {
         update: function(e, ui) {
-            self.itemOrderChanged = true;
+            self.layoutNeedSync = true;
         },
         axis: 'y'
     };
 
     $scope.sortableOptionsCategory = {
         update: function(e, ui) {
-            self.categoryOrderChanged = true;
+            self.categoryNeedSync = true;
         },
         axis: 'y'
     };
@@ -60,9 +65,9 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
 
         var newItem = {
             name: $scope.newItem.trim(),
-            completed: false,
-            created: new Date(),
-            count: 0
+            desc: '',
+            crossed: false,
+            created: new Date()
         };
         //
         if (!newItem.name) {
@@ -72,11 +77,12 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
         $scope.items.push(newItem);
         $scope.newItem = '';
 
-        self.itemOrderChanged = true;
+        self.layoutNeedSync = true;
     };
 
     $scope.deleteAll = function() {
         $scope.crossedItems = [];
+        self.layoutNeedSync = true;
     };
 
     $scope.editItem = function(item) {
@@ -109,7 +115,7 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
     $scope.saveItem = function() {
 
         if(!(typeof $scope.edittedItem.name === 'string')) {
-            self.showToast(myTexts.msg.emptyName);
+            myToast.showToast(myTexts.msg.emptyName, $mdToast);
             return;
         }
         var layout = {
@@ -120,8 +126,6 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
             categories: $scope.addedCategories
         };
 
-        console.log(JSON.stringify(layout));
-
         $http({
             url: myConfig.MY_API + '/layout/' + layout.id,
             method: 'PUT',
@@ -130,26 +134,26 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
             },
             headers: {'Content-Type': 'application/json;charset=utf-8'}
         }).then(function () {
-            self.showToast(myTexts.msg.succSave);
+            myToast.showToast(myTexts.msg.succSave, $mdToast);
+            self.layoutNeedSync = true;
             $scope.back();
         }, function(res){
-            self.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err);
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
         });
     };
 
     $scope.crossItem = function(item){
-        //item.crossed = true;
-
+        item.crossed = true;
         self.removeFromArray(item, $scope.items);
-
         $scope.crossedItems.push(item);
+        self.layoutNeedSync = true;
     };
 
     $scope.uncrossItem = function(item){
-        //item.crossed = false;
-
+        item.crossed = false;
         self.removeFromArray(item, $scope.crossedItems);
         $scope.items.push(item);
+        self.layoutNeedSync = true;
     };
 
     self.removeFromArray = function(item, arr){
@@ -161,8 +165,8 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
 
     $scope.addCategory = function (item) {
 
-        if (self.hasDuplicates($scope.addedCategories.concat(item))) {
-            self.showToast(myTexts.msg.alreadyInArray);
+        if (myUtils.hasDuplicates($scope.addedCategories.concat(item))) {
+            myToast.showToast(myTexts.msg.alreadyInArray, $mdToast);
             return;
         }
 
@@ -173,15 +177,16 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
 
         $scope.addedCategories.push(c);
 
-        self.categoryOrderChanged = true;
+        self.categoryNeedSync = true;
     };
 
     $scope.deleteCategory = function(item){
         console.log(JSON.stringify(item));
         if(item.id != 0) {
             self.removeFromArray(item, $scope.addedCategories);
+            self.categoryNeedSync = true;
         } else {
-            self.showToast(myTexts.msg.notRemovable);
+            myToast.showToast(myTexts.msg.notRemovable, $mdToast);
         }
     };
     //--------------- NAVIGATION
@@ -203,48 +208,7 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
         self.getCategories();
         self.getLayouts();
     };
-    //--------------- TOAST
-    var last = {
-        bottom: false,
-        top: true,
-        left: false,
-        right: true
-    };
-    $scope.toastPosition = angular.extend({},last);
-    $scope.getToastPosition = function() {
-        sanitizePosition();
-        return Object.keys($scope.toastPosition)
-            .filter(function(pos) { return $scope.toastPosition[pos]; })
-            .join(' ');
-    };
-    function sanitizePosition() {
-        var current = $scope.toastPosition;
-        if ( current.bottom && last.top ) current.top = false;
-        if ( current.top && last.bottom ) current.bottom = false;
-        if ( current.right && last.left ) current.left = false;
-        if ( current.left && last.right ) current.right = false;
-        last = angular.extend({},current);
-    }
 
-    self.showToast = function(msg){
-        $mdToast.show(
-            $mdToast.simple()
-                .textContent(msg)
-                .position($scope.getToastPosition())
-                .hideDelay(2000)
-        );
-    };
-
-    self.hasDuplicates = function( A ) {
-        var i, j, n;
-        n=A.length;
-        // to ensure the fewest possible comparisons
-        for (i=0; i<n; i++) {                    // outer loop uses each item i at 0 through n
-            for (j=i+1; j<n; j++) {              // inner loop only compares items j at i+1 to n
-                if (A[i].id==A[j].id) return true;
-            }	}
-        return false;
-    };
 
 
 });

@@ -11,13 +11,14 @@
         <h3>
             <span>{{subtitle}} </span>
         </h3>
-        <h3>
-            <span>: {{edittedItem.name}} </span>
-        </h3>
 
         <span flex></span>
 
-        <md-button class="md-icon-button" aria-label="Save" ng-click="saveItem()">
+        <md-button class="md-icon-button" aria-label="Sort" ng-click="orderByLayout()">
+            <md-icon md-svg-icon="img/icons/ic_sort_48px.svg"></md-icon>
+        </md-button>
+
+        <md-button class="md-icon-button" aria-label="Save" ng-click="saveList()">
             <md-icon md-svg-icon="img/icons/ic_save_48px.svg"></md-icon>
         </md-button>
 

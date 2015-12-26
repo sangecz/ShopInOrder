@@ -19,25 +19,29 @@ var myTexts = {
         email: 'Email',
         password: 'Password',
         login: 'Login',
-        toggleProp: 'Show/hide properties'
+        toggleProp: 'Show/hide properties',
+        add: 'Add'
     },
 
     list: {
-        title: 'Shopping Lists',
+        title: 'Lists',
         add: 'And new list',
-        edit: 'Edit list'
+        edit: 'list'
     },
     category:{
         title: 'Categories',
-        add: 'Add category'
+        add: 'Add category',
+        with: 'With category'
     },
     layout: {
         title: 'Layouts',
         add: 'And new layout',
-        edit: 'Edit layout'
+        edit: 'layout'
     },
     item: {
-        title: 'Items'
+        title: 'List items',
+        add: 'Add new item',
+        edit: 'item'
     },
 
     msg: {

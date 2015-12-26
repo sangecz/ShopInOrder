@@ -12,12 +12,12 @@ app.controller("AuthController", function AuthController($scope, $location, shar
     $scope.login = function(){
 
         if($scope.user.email === '' || $scope.user.password === '') {
-            self.showToast(myTexts.msg.emailPassRequired);
+            myToast.showToast(myTexts.msg.emailPassRequired, $mdToast);
             return;
         }
 
         if(!self.isValidEmail($scope.user.email)){
-            self.showToast(myTexts.msg.invalidEmail);
+            myToast.showToast(myTexts.msg.invalidEmail, $mdToast);
             return;
         }
 
@@ -34,7 +34,7 @@ app.controller("AuthController", function AuthController($scope, $location, shar
             $cookies.put('token', res.data.token, { expires: minutesLater});
             $location.path('/list');
         }, function(res){
-            self.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err);
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
         });
     };
 
@@ -53,38 +53,6 @@ app.controller("AuthController", function AuthController($scope, $location, shar
     };
 
     $scope.sync = function(){
-    };
-
-    //--------------- TOAST
-    var last = {
-        bottom: false,
-        top: true,
-        left: false,
-        right: true
-    };
-    $scope.toastPosition = angular.extend({},last);
-    $scope.getToastPosition = function() {
-        sanitizePosition();
-        return Object.keys($scope.toastPosition)
-            .filter(function(pos) { return $scope.toastPosition[pos]; })
-            .join(' ');
-    };
-    function sanitizePosition() {
-        var current = $scope.toastPosition;
-        if ( current.bottom && last.top ) current.top = false;
-        if ( current.top && last.bottom ) current.bottom = false;
-        if ( current.right && last.left ) current.left = false;
-        if ( current.left && last.right ) current.right = false;
-        last = angular.extend({},current);
-    }
-
-    self.showToast = function(msg){
-        $mdToast.show(
-            $mdToast.simple()
-                .textContent(msg)
-                .position($scope.getToastPosition())
-                .hideDelay(2000)
-        );
     };
 
 });

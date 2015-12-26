@@ -28,7 +28,8 @@ exports.index = function(req, res){
             var e = {
                 desc: entry[i].gsx$desc.$t,
                 name: entry[i].gsx$name.$t,
-                id: entry[i].gsx$id.$t
+                id: entry[i].gsx$id.$t,
+                layoutId: entry[i].gsx$layoutid.$t
             };
             list.push(e);
         }

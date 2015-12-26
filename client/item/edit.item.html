@@ -15,9 +15,9 @@
             <input ng-model="edittedItem.desc">
         </md-input-container>
         <md-input-container class="md-block">
-            <label>{{texts.lbl.layout}}</label>
-            <md-select ng-model="edittedItem.layoutId">
-                <md-option value="{{l.id}}" ng-repeat="l in layouts">{{l.name}}</md-option>
+            <label>{{texts.lbl.category}}</label>
+            <md-select ng-model="edittedItem.categoryId">
+                <md-option value="{{c.id}}" ng-repeat="c in categories" required>{{c.name}}</md-option>
             </md-select>
         </md-input-container>
 

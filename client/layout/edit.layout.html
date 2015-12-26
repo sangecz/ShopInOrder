@@ -4,10 +4,13 @@
 <md-content class="container">
 
     <md-switch ng-model="data.toggleProp">{{texts.lbl.toggleProp}}</md-switch>
-    <form ng-show="data.toggleProp">
+    <form ng-show="data.toggleProp" name="myForm">
         <md-input-container class="md-block">
             <label>{{texts.lbl.shopName}}</label>
-            <input ng-model="edittedItem.name" required>
+            <input name="name" ng-model="edittedItem.name" required>
+            <span style="color:red" ng-show="myForm.name.$dirty && myForm.name.$invalid">
+                <span ng-show="myForm.name.$error.required">{{texts.msg.emptyName}}</span>
+            </span>
         </md-input-container>
         <md-input-container class="md-block">
             <label>{{texts.lbl.desc}}</label>
