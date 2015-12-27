@@ -31,8 +31,9 @@
 
 
     <!-- Add your site or application content here -->
-    <div ng-view="" ng-class="slide"></div>
-
+    <md-content class="container" flex>
+        <div ng-view="" ng-class="slide"></div>
+    </md-content>
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
     <script>
@@ -74,9 +75,9 @@
     <script src="auth/auth.controller.js"></script>
     <script src="util/locale.en.js"></script>
     <script src="util/config.js"></script>
-    <script src="item/item.controller.js"></script>
     <script src="item/edit.item.controller.js"></script>
     <script src="list/list.controller.js"></script>
+    <script src="list/edit.list.controller.js"></script>
     <script src="layout/layout.controller.js"></script>
           <!-- endinjector -->
         <!-- endbuild -->

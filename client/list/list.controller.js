@@ -2,17 +2,10 @@
 app.controller("ListController", function ListController($scope, $location, sharedProperties, $http, $mdToast, $cookies) {
     var self = this;
 
-    self.checkProperties = function() {
-        if(sharedProperties.getProperty() != null && sharedProperties.getProperty().list !== undefined){
-            $scope.edittedItem = sharedProperties.getProperty().list;
-            $scope.edittedItem.layoutId = parseInt($scope.edittedItem.layoutId) == 'number' ? parseInt($scope.edittedItem.layoutId) : "";
-        } else {
-            $location.path('/list');
-        }
-    };
-    self.checkProperties();
-
     $scope.title = myTexts.list.title;
+    $scope.crossedItems = [];
+    $scope.newItem = '';
+    $scope.texts = myTexts;
     self.listNeedSync = false;
 
     // lists
@@ -20,34 +13,10 @@ app.controller("ListController", function ListController($scope, $location, shar
     self.getLists = function(){
         $http.get(myConfig.MY_API + '/list').then(function(data) {
             $scope.items = data.data;
+            console.log(JSON.stringify($scope.items));
         });
     };
     self.getLists();
-
-    // layouts
-    $scope.layouts = [];
-    self.getLayouts = function(){
-        $http.get(myConfig.MY_API + '/layout').then(function(data) {
-            $scope.layouts = data.data;
-        });
-    };
-    self.getLayouts();
-
-    $scope.crossedItems = [];
-    $scope.newItem = '';
-    $scope.texts = myTexts;
-
-    $scope.sortableOptions = {
-        update: function(e, ui) {
-            self.listNeedSync = true;
-        },
-        axis: 'y'
-    };
-
-    $scope.openItem = function(item) {
-        sharedProperties.setProperty({list: item});
-        $location.path('/item');
-    };
 
     $scope.addItem = function() {
 
@@ -77,30 +46,6 @@ app.controller("ListController", function ListController($scope, $location, shar
     $scope.editItem = function(item) {
         sharedProperties.setProperty({list: item});
         $location.path('/list/edit');
-    };
-
-    $scope.saveItem = function(item) {
-        if(!(typeof $scope.edittedItem.name === 'string')) {
-            myToast.showToast(myTexts.msg.emptyName, $mdToast);
-            return;
-        }
-
-        var list = $scope.edittedItem;
-
-        $http({
-            url: myConfig.MY_API + '/list/' + list.id,
-            method: 'PUT',
-            data: {
-                item: list
-            },
-            headers: {'Content-Type': 'application/json;charset=utf-8'}
-        }).then(function () {
-            myToast.showToast(myTexts.msg.succSave, $mdToast);
-            self.listNeedSync = true;
-            $scope.back();
-        }, function(res){
-            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
-        });
     };
 
     $scope.crossItem = function(item){

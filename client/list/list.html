@@ -1,7 +1,7 @@
 
 <div ng-include="'../components/toolbar.html'"></div>
 
-<md-content class="container" flex>
+<div class="container-content">
 
     <form ng-submit="addItem()">
        <md-input-container class="md-block">
@@ -13,11 +13,11 @@
 
     <p ng-show="items.length == 0" class="crossed">{{texts.empty}}</p>
 
-    <ul ui-sortable="sortableOptions"  ng-model="items" class="list">
+    <ul class="list">
        <li ng-repeat="item in items" class="item">
            <table class="list-item" width="100%">
                <tr>
-                   <td width="70%" ng-click="openItem(item)">{{ item.name }}</td>
+                   <td width="70%" ng-click="editItem(item)">{{ item.name }}</td>
                    <td width="10%" >{{ item.count }}</td>
                    <td width="10%" ng-click="editItem(item)">
                        <md-button class="md-icon-button" aria-label="Edit">
@@ -30,11 +30,6 @@
                        </md-button>
                    </td>
                </tr>
-               <!--<tr>-->
-                   <!--<td colspan="3">-->
-                       <!--<span class="item-desc">{{item.desc}}</span>-->
-                   <!--</td>-->
-               <!--</tr>-->
            </table>
 
        </li>
@@ -64,6 +59,4 @@
            </li>
        </ul>
 
-    </md-content>
-
-
+</div>

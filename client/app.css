@@ -42,9 +42,31 @@
     cursor: move;
 }
 
+.navigation {
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+md-input-container.btn  {
+    margin: 0; !important;
+}
+
+md-input-container.addItem div.md-errors-spacer {
+    min-height: 0px; !important;
+}
+
+
 .container {
-    margin: 0 1em 0 1em;
-    min-width: 400px;
+    margin: 0;
+    padding: 0;
+    min-width: 300px;
+}
+
+.container-content {
+    padding: 0 .5em 0 .5em;
+    margin-top: 72px;
+    min-width: 300px;
 }
 
 p.crossed {
@@ -60,7 +82,7 @@ table.list-item td {
 
 .footer .container {
     display: block;
-    min-width: 400px;
+    min-width: 300px;
 }
 
 .item-desc {

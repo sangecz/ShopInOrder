@@ -42,7 +42,7 @@ var app = angular.module("sio", [
             })
             .when('/list/edit', {
                 templateUrl: 'list/edit.list.html',
-                controller: 'ListController'
+                controller: 'EditListController'
             })
             .when('/layout', {
                 templateUrl: 'layout/layout.html',
@@ -51,10 +51,6 @@ var app = angular.module("sio", [
             .when('/layout/edit', {
                 templateUrl: 'layout/edit.layout.html',
                 controller: 'LayoutController'
-            })
-            .when('/item', {
-                templateUrl: 'item/item.html',
-                controller: 'ItemController'
             })
             .when('/item/edit', {
                 templateUrl: 'item/edit.item.html',

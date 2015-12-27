@@ -1,13 +1,12 @@
-/**
- * Created by sange on 17/12/15.
- */
-
-
-app.controller("ItemController", function ItemController($scope, $location, $http, sharedProperties, $mdToast) {
-
+app.controller("EditListController", function ListController($scope, $location, sharedProperties, $http, $mdToast, $cookies) {
     var self = this;
 
-    self.checkProperties = function(){
+    $scope.texts = myTexts;
+    self.listNeedSync = false;
+    $scope.edittedList = {};
+    $scope.edittedList.name = "";
+
+    self.checkProperties = function() {
         if(sharedProperties.getProperty() != null && sharedProperties.getProperty().list !== undefined){
             $scope.edittedList = sharedProperties.getProperty().list;
             $scope.subtitle = $scope.edittedList.name;
@@ -18,10 +17,10 @@ app.controller("ItemController", function ItemController($scope, $location, $htt
     self.checkProperties();
 
     // layouts
-    self.layouts = [];
+    $scope.layouts = [];
     self.getLayouts = function(){
         $http.get(myConfig.MY_API + '/layout').then(function(data) {
-            self.layouts = data.data;
+            $scope.layouts = data.data;
             if($scope.edittedList !== undefined) {
                 self.getCategories();
             }
@@ -29,14 +28,38 @@ app.controller("ItemController", function ItemController($scope, $location, $htt
     };
     self.getLayouts();
 
+    $scope.saveItem = function(item) {
+        if(!(typeof $scope.edittedList.name === 'string')) {
+            myToast.showToast(myTexts.msg.emptyName, $mdToast);
+            return;
+        }
+
+        var list = $scope.edittedList;
+
+        $http({
+            url: myConfig.MY_API + '/list/' + list.id,
+            method: 'PUT',
+            data: {
+                item: list
+            },
+            headers: {'Content-Type': 'application/json;charset=utf-8'}
+        }).then(function () {
+            myToast.showToast(myTexts.msg.succSave, $mdToast);
+            self.listNeedSync = true;
+        }, function(res){
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
+        });
+    };
+
+
     $scope.crossedItemsNum = 0;
     $scope.crossedItems = [];
-    $scope.items = [
-            {name: 'ew', categoryId: 0, crossed: false},
-            {name: 'esv', categoryId: 0, crossed: false},
-            {name: 'sdvsvsd', categoryId: 2, crossed: false},
-            {name: 'ngn', categoryId: 2, crossed: false},
-            {name: 'asdasdasd', categoryId: 4, crossed: false}
+    self.items = [
+        {name: 'ew', categoryId: 0, crossed: false},
+        {name: 'esv', categoryId: 6, crossed: false},
+        {name: 'sdvsvsd', categoryId: 2, crossed: false},
+        {name: 'ngn', categoryId: 2, crossed: false},
+        {name: 'asdasdasd', categoryId: 4, crossed: false}
     ];
     $scope.itemsOrganized = [];
     $scope.categories = [];
@@ -44,7 +67,7 @@ app.controller("ItemController", function ItemController($scope, $location, $htt
     self.getCategories = function(){
         $http.get(myConfig.MY_API + '/category').then(function(data) {
             $scope.categories = data.data;
-            self.categorizeItems();
+            $scope.categorizeItems($scope.edittedList.layoutId);
         });
     };
 
@@ -54,15 +77,6 @@ app.controller("ItemController", function ItemController($scope, $location, $htt
     $scope.newItem.categoryId = 0;
     $scope.texts = myTexts;
     self.itemNeedSync = false;
-
-    $scope.sortableOptions = {
-        update: function(e, ui) {
-            self.itemNeedSync = true;
-            console.log(JSON.stringify($scope.itemsOrganized));
-            //console.log(JSON.stringify(ui));
-        },
-        axis: 'y'
-    };
 
     $scope.addItem = function() {
 
@@ -78,7 +92,6 @@ app.controller("ItemController", function ItemController($scope, $location, $htt
             return;
         }
 
-        //$scope.items.push(newItem);
         for(var c = 0; c < $scope.itemsOrganized.length; c++){
             if(newItem.categoryId == $scope.itemsOrganized[c].id){
                 $scope.itemsOrganized[c].arr.push(newItem);
@@ -93,14 +106,13 @@ app.controller("ItemController", function ItemController($scope, $location, $htt
     };
 
     $scope.deleteAll = function() {
-        //$scope.crossedItems = [];
         var itemsToDelete = [];
         for(var i = 0; i < $scope.itemsOrganized.length; i++) {
             var cat = $scope.itemsOrganized[i];
             for(var j = 0; j < cat.arr.length; j++) {
-               if(cat.arr[j].crossed == true) {
-                   itemsToDelete.push(cat.arr[j]);
-               }
+                if(cat.arr[j].crossed == true) {
+                    itemsToDelete.push(cat.arr[j]);
+                }
             }
         }
         for(var k = 0; k < itemsToDelete.length; k++) {
@@ -152,18 +164,20 @@ app.controller("ItemController", function ItemController($scope, $location, $htt
         }
     };
 
-    self.categorizeItems = function () {
-        var catSortedByLayout = [];
-        for(var k = 0; k < self.layouts.length; k++) {
-            if (self.layouts[k].id == $scope.edittedList.layoutId) {
-                var categories = JSON.parse('[' + self.layouts[k].categories + ']');
+    $scope.categorizeItems = function (layoutId) {
+        console.log(layoutId);
+        $scope.itemsOrganized = [];
+        for(var k = 0; k < $scope.layouts.length; k++) {
+            if ($scope.layouts[k].id == layoutId) {
+                var categories = JSON.parse('[' + $scope.layouts[k].categories + ']');
+
                 for(var c = 0; c < categories.length; c++){
                     var catId = categories[c];
                     for(var cat = 0; cat < $scope.categories.length; cat++){
                         if(catId == $scope.categories[cat].id){
                             var o = $scope.categories[cat];
                             o.arr = [];
-                            catSortedByLayout.push(o);
+                            $scope.itemsOrganized.push(o);
                             break;
                         }
                     }
@@ -184,37 +198,27 @@ app.controller("ItemController", function ItemController($scope, $location, $htt
         }
         function addRemainingCategories(remaining){
             for(var i = 0; i < remaining.length; i++){
-                if(!objectPropInArray(catSortedByLayout, 'id', remaining[i].id)){
+                if(!objectPropInArray($scope.itemsOrganized, 'id', remaining[i].id)){
                     var o = remaining[i];
                     o.arr = [];
-                    catSortedByLayout.push(o);
+                    $scope.itemsOrganized.push(o);
                 }
             }
         }
         addRemainingCategories($scope.categories);
 
-        //console.log("AAA" + JSON.stringify(catSortedByLayout));
-
         // fills items into categorized array
-        for(var j = 0; j < $scope.items.length; j++){
-            for(var k = 0; k < catSortedByLayout.length; k++){
-                if($scope.items[j].categoryId == catSortedByLayout[k].id){
-                    catSortedByLayout[k].arr.push($scope.items[j]);
+
+        for(var j = 0; j < self.items.length; j++){
+            for(var k = 0; k < $scope.itemsOrganized.length; k++){
+                if(self.items[j].categoryId == $scope.itemsOrganized[k].id){
+                    $scope.itemsOrganized[k].arr.push(self.items[j]);
                 }
             }
         }
+        //$scope.itemsOrganized = $scope.itemsOrganized;
 
-        $scope.itemsOrganized = catSortedByLayout;
+        console.log("ORGANIZED: " + JSON.stringify($scope.itemsOrganized));
     };
 
-    //--------------- NAVIGATION
-
-    $scope.saveList = function(){
-        // TODO
-    };
-
-    $scope.orderByLayout = function(){
-        // TODO
-        console.log("orderByLayout");
-    };
 });
