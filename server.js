@@ -27,7 +27,7 @@ var auth = require('./server/auth');
 app.get(MY_API + '/category', category.index);
 
 // list
-app.get(MY_API + '/list', list.index);
+app.post(MY_API + '/list', list.index);
 app.put(MY_API + '/list', list.sync);
 app.put(MY_API + '/list/:id', list.update);
 
