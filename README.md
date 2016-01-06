@@ -1,7 +1,11 @@
 # ShopInOrder 
 
-Application (angular client) at <code>https://sange-icinga.hukot.net:3000/sio</code>
-Shortened: <code>SHORTCUT_URL</code>
+Application (angular client) at <code>https://sange-icinga.hukot.net:8443</code>
+
+Test user:
+
+ * email: <code>sange@seznam.cz</code>
+ * password: <code>pm123.</code>
 
 ## API overview
 
@@ -14,8 +18,8 @@ Shortened: <code>SHORTCUT_URL</code>
 | X-Parse-Session-Token  | from_login_response                         | 
 
 ### Methods
-
-<code>URL prefix: 'https://sange-icinga.hukot.net:3000/sio/api/1.0'</code>
+TODO
+<code>URL prefix: 'https://sange-icinga.hukot.net:8443/api/1.0'</code>
 
 | HTTP Method  | URL            | Operation       | Required params           | Optional params | Params type | Response TODO       | 
 | -------------|----------------|-----------------|---------------------------|-----------------|-------------|---------------------|

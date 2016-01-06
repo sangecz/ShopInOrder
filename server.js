@@ -1,3 +1,9 @@
+var fs = require('fs');
+var http = require('http');
+var https = require('https');
+var privateKey  = fs.readFileSync('server/sslcert/server.key', 'utf8');
+var certificate = fs.readFileSync('server/sslcert/server.crt', 'utf8');
+var credentials = {key: privateKey, cert: certificate};
 var express = require('express');
 var app = express();
 var path = require('path');
@@ -5,8 +11,6 @@ var request = require('request');
 
 var myConfig = require('./server/config');
 var MY_API = '/api/' + myConfig.version;
-
-
 
 // serve static content
 app.use(express.static(path.join(__dirname, 'client')));
@@ -27,7 +31,7 @@ var auth = require('./server/auth');
 app.get(MY_API + '/category', category.index);
 
 // list
-app.post(MY_API + '/list', list.index);
+app.get(MY_API + '/list', list.list);
 app.put(MY_API + '/list', list.sync);
 app.put(MY_API + '/list/:id', list.update);
 
@@ -48,6 +52,13 @@ app.get('/:xyz|(/:url(api|auth|components|app|bower_components|assets)/*)', func
     res.sendStatus(404);
 });
 
-app.listen(myConfig.port);
+//app.listen(myConfig.port);
+
+var httpServer = http.createServer(app);
+var httpsServer = https.createServer(credentials, app);
+
+httpServer.listen(myConfig.port);
+httpsServer.listen(myConfig.sslPort);
 
 console.log('running...listening on port ' + myConfig.port);
+console.log('running...listening on port ' + myConfig.sslPort);
