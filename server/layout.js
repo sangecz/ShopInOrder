@@ -3,42 +3,127 @@
  */
 
 var myConfig = require('./config');
+var myUtils = require('./myUtils');
 var request = require('request');
 
-exports.index = function(req, res){
+exports.list = function(req, res){
 
-    // ID of the Google Spreadsheet
-    var spreadsheetID = '1HvdrpO4rSg1LHJzLgIZfzHjRMf8uT2lYI9IivhU2fH0';
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
 
-    // Make sure it is public or set to Anyone with link can view
-    var url = "https://spreadsheets.google.com/feeds/list/" + spreadsheetID + "/od6/public/values?alt=json";
+    var url = myConfig.parseAPI.url + '/classes/layouts';
+    var options = {
+        method: 'GET',
+        url: url,
+        headers: myConfig.parseAPI.headers
+    };
+    options.headers['X-Parse-Session-Token'] = token;
 
-    request({
-        uri: url,
-        method: "GET",
-        timeout: 10000,
-        followRedirect: true,
-        maxRedirects: 10
-    }, function(error, response, data) {
-
-        var entry = JSON.parse(data).feed.entry;
-        var layout = [];
-
-        for(var i = 0; i < entry.length; i++){
-            var e = {
-                desc: entry[i].gsx$desc.$t,
-                name: entry[i].gsx$name.$t,
-                id: entry[i].gsx$id.$t,
-                categories: entry[i].gsx$categories.$t
-            };
-            layout.push(e);
+    function cb(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            res.status(200).json(JSON.parse(body));
+        } else {
+            res.status(response.statusCode).json({err: JSON.parse(response.body).error});
         }
+    }
+    request(options, cb);
+};
 
-        res.status(200).json(layout);
+exports.retrieve = function(req, res){
+
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
+    var id = req.params.id;
+
+    var url = myConfig.parseAPI.url + '/classes/layouts/' + id.trim();
+    var options = {
+        method: 'GET',
+        url: url,
+        headers: myConfig.parseAPI.headers
+    };
+    options.headers['X-Parse-Session-Token'] = token;
+
+    function cb(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            res.status(200).json(JSON.parse(body));
+        } else {
+            res.status(response.statusCode).json({err: JSON.parse(response.body).error});
+        }
+    }
+    request(options, cb);
+};
+
+exports.delete = function(req, res){
+
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
+    var id = req.params.id;
+
+    var url = myConfig.parseAPI.url + '/classes/layouts/' + id;
+    var options = {
+        method: 'DELETE',
+        url: url,
+        headers: myConfig.parseAPI.headers
+    };
+    options.headers['X-Parse-Session-Token'] = token;
+
+    function cb(error, response, body) {
+        if (!error && response.statusCode == 204) {
+            res.status(204).json(JSON.parse(body));
+        } else {
+            res.status(response.statusCode).json({err: JSON.parse(response.body).error});
+        }
+    }
+    request(options, cb);
+};
+
+exports.create = function(req, res){
+
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
+
+    var layout = {};
+    req.on('data', function(chunk) {
+        var parsedChunk = JSON.parse(chunk);
+        layout.name = parsedChunk.name;
+        layout.desc = parsedChunk.desc == undefined ? "" :parsedChunk.desc;
+        layout.position = parsedChunk.position;
+        layout.categories = parsedChunk.categories;
+        layout.ACL = parsedChunk.ACL;
+    });
+
+    req.on('end', function() {
+        if(layout.name == undefined || layout.position == undefined
+            || layout.categories == undefined || layout.ACL == undefined) {
+            res.status(400).json({err: 'missing required parameter (name, position, categories, ACL)'});
+        } else if(!(typeof layout.name === 'string')) {
+            res.status(400).json({err: 'bad layout name'});
+        } else if(!(typeof layout.desc === 'string')) {
+            res.status(400).json({err: 'bad layout description'});
+        } else if(!myUtils.isNumber(layout.position)) {
+            res.status(400).json({err: 'bad layout position'});
+        } else if(!myUtils.isArray(layout.categories)) {
+            res.status(400).json({err: 'bad layout categories'});
+        } else if(!(typeof layout.ACL === 'object')) {
+            res.status(400).json({err: 'bad layout ACL'});
+        } else {
+            var options = {
+                method: 'POST',
+                url:  myConfig.parseAPI.url + '/classes/layouts',
+                headers: myConfig.parseAPI.headers,
+                body: JSON.stringify(layout)
+            };
+            options.headers['X-Parse-Session-Token'] = token;
+            function cb(error, response, body) {
+                if (!error && response.statusCode == 201) {
+                    res.status(201).json(JSON.parse(body));
+                } else {
+                    res.status(response.statusCode).json({err: JSON.parse(response.body).error});
+                }
+            }
+            request(options, cb);
+        }
     });
 };
 
 exports.update = function(req, res){
+    // TODO
     var item = {};
 
     req.on('data', function(chunk) {
@@ -55,8 +140,6 @@ exports.update = function(req, res){
         } else if(hasDuplicates(item.categories)) {
             res.sendStatus(400).json({err: 'duplicate categories'});
         } else {
-
-            // TODO todoist
 
             res.sendStatus(204);
         }

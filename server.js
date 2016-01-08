@@ -32,20 +32,25 @@ app.get(MY_API + '/category', category.index);
 
 // list
 app.get(MY_API + '/list', list.list);
+app.get(MY_API + '/list/:id', list.retrieve);
+app.delete(MY_API + '/list/:id', list.delete);
+app.post(MY_API + '/list', list.create);
+
 app.put(MY_API + '/list', list.sync);
 app.put(MY_API + '/list/:id', list.update);
 
 // layout
-app.get(MY_API + '/layout', layout.index);
+app.get(MY_API + '/layout', layout.list);
+app.get(MY_API + '/layout/:id', layout.retrieve);
+app.post(MY_API + '/layout', layout.create);
+app.delete(MY_API + '/layout/:id', layout.delete);
+
 app.put(MY_API + '/layout', layout.sync);
 app.put(MY_API + '/layout/:id', layout.update);
 
 // auth
 app.post(MY_API + '/register', auth.register);
 app.post(MY_API + '/login', auth.login);
-
-//auth
-// TODO register+login
 
 // All undefined asset or api routes should return a 404
 app.get('/:xyz|(/:url(api|auth|components|app|bower_components|assets)/*)', function(req, res){
