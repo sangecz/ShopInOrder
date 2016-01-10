@@ -5,7 +5,7 @@
 var myConfig = require('./config');
 var request = require('request');
 
-exports.index = function(req, res){
+exports.list = function(req, res){
 
     // ID of the Google Spreadsheet
     var spreadsheetID = myConfig.categorySpreadsheetId;

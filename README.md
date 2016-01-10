@@ -31,30 +31,32 @@ These headers are necessary for consuming Parse API. App sends them on behalf of
 **All methods except the first three require passing session token named "token" from /login or /register request as a header "token".**
 All POST methods accept parameters in body (raw).
 
-| HTTP Method| URL        | Operation                                        | Required params          |
-| -----------|------------|-------------------------------------------------|---------------------------|
-| POST       | /register  | register new user (requires email verification) | username, email, password |        
-| POST       | /login     | login user                                      | username, password        |
-| GET        | /category  | list categories                                 |                           |
-| POST       | /list      | create list at given position of your lists (lower number, higher position) | name, position, categories, ACL |  
-| GET        | /list/id   | retrieve list with given id                     |                           |     
-| GET        | /list      | list lists                                      |                           |    
-| PUT        | /list/id   | update list     |   |   
-| DELETE     | /list/id   | delete list with given id                       |                           |    
-| POST       | /layout    | create layout at given position of your layouts (lower number, higher position) | name, position, categories, ACL |    
-| GET        | /layout/id | retrieve layout with given id                   |                           |    
-| GET        | /layout    | list layouts                                    |                           |      
-| PUT        | /layout/id | update layout   |   |      
-| DELETE     | /layout/id | delete layout with given id                     |                           |      
-| POST       | /item      | create item     |   |
-| GET        | /item/id   | retrieve item   |   |    
-| GET        | /item      | list items      |   |    
-| PUT        | /item/id   | update item     |   |    
-| DELETE     | /item/id   | delete item     |   |    
+| HTTP Method| URL        | Operation                                        | Required params                   |
+| -----------|------------|-------------------------------------------------|------------------------------------|
+| POST       | /register  | register new user (requires email verification) | username, email, password          |        
+| POST       | /login     | login user                                      | username, password                 |
+| GET        | /category  | list categories                                 |                                    |
+| POST       | /list      | create list at given position of your lists     | name, position, layout_id, ACL     |  
+| GET        | /list      | list lists                                      |                                    |    
+| GET        | /list/id   | retrieve list with given id                     |                                    |     
+| PUT        | /list/id   | update any list's parameter                     |                                    |   
+| DELETE     | /list/id   | delete list with given id                       |                                    |    
+| POST       | /layout    | create layout at given position of your layouts | name, position, categories, ACL    |    
+| GET        | /layout    | list layouts                                    |                                    |      
+| GET        | /layout/id | retrieve layout with given id                   |                                    |    
+| PUT        | /layout/id | update any layout's parameter                   |                                    |      
+| DELETE     | /layout/id | delete layout with given id                     |                                    |      
+| POST       | /item      | create item                                     | name, category, list_id, ACL       |
+| GET        | /item      | list items                                      |                                    |    
+| GET        | /item/id   | retrieve item with given id                     |                                    |    
+| PUT        | /item/id   | update item                                     |                                    |    
+| DELETE     | /item/id   | delete item with given id                       |                                    |    
 
-* successful registration requires email verification (=click on received link in registration email)
-* all requests and responses are in JSON, see examples below
-
+* successful **registration requires email verification** (=click on received link in registration email)
+* all **requests** and **responses** are in **JSON**, see examples below
+* **position**: lower number, higher position
+* **list_id, layout_id**: string id reference to list resp. layout, when you want to unset this reference, use null as a value instead of string 
+* with **ACL** you can **control access rights** to an object, example below: 
 ```
 ACL: objects only for you
 "ACL": {
@@ -65,21 +67,45 @@ ACL: objects only for you
       }
 ```
 
-
-## Example responses
+## Example request & responses
 
 ### Successful
-TODO pridat priklady requestu!!
-
+* GET and DELETE requests do not contain body, so request is not listed with these methods.
+* DELETE response is empty object.
+#### POST /register
+#####request:
 ```
-POST /login or POST /register
+{
+    "username":"myname",
+    "password":"mypass",
+    "email":"email@email.com"
+}
+```
+#####response:
+```
 {
   "token": "r:NTgtL2..........Ko2skCv"
 }
 ```
 
+####POST /login
+#####request:
 ```
-GET /category
+{
+    "username":"myname",
+    "password":"mypass",
+}
+```
+#####response:
+```
+{
+  "token": "r:NTgtL2..........Ko2skCv"
+}
+```
+
+####GET /category
+#####response:
+```
 [
   {
     "desc": "uncatogorized",
@@ -95,9 +121,33 @@ GET /category
 ]
 ```
 
+####POST /list
+#####request:
 ```
-GET /list    --> array of object(s) 
-GET /list/id --> one object (or error)
+{
+    "name":"list 2342",
+    "desc":"",
+    "position": 7,
+    "layout_id": "qc....T",
+    "ACL":{
+      "vX.....N": {
+        "read": true,
+        "write": true
+      }
+    }
+}
+```
+#####response:
+```
+{
+  "createdAt": "2016-01-10T22:17:21.216Z",
+  "objectId": "Gq....q2"
+}
+```
+
+####GET /list
+#####response:
+```
 {
   "results": [
     {
@@ -121,36 +171,191 @@ GET /list/id --> one object (or error)
   ]
 }
 ```
+####GET /list/id
+Same as <code>GET /list</code> except it returns only one object (or error).
 
+
+####PUT /list/id
+#####request:
 ```
-POST /list or POST /layout or POST /item
 {
-  "createdAt": "2016-01-08T09:15:38.100Z",
-  "objectId": "xA.......w"
+    "name":"list xxx",
+    "desc":"",
+    "position":1,
+    "layout_id": null,
+    "ACL":{
+      "vX.....N": {
+        "read": true,
+        "write": true
+      }
+    }
+}
+```
+#####response:
+```
+{
+  "updatedAt": "2016-01-10T22:20:45.416Z"
 }
 ```
 
+####POST /layout
+#####request:
 ```
-GET /layout    --> array of object(s) 
-GET /layout/id --> one object (or error)
+{
+    "name":"layout 1",
+    "desc":"",
+    "position": 7,
+    "categories": [7, 8, 0],
+    "ACL":{
+      "vX.....N": {
+        "read": true,
+        "write": true
+      }
+    }
+}
+```
+#####response:
+```
+{
+  "createdAt": "2016-01-10T22:17:21.216Z",
+  "objectId": "Gq....q2"
+}
+```
+
+
+####GET /layout
+#####response:
+```
 {
   "results": [
     {
       "ACL": {
-        "v......N": {
+        "vX8......8N": {
           "read": true,
           "write": true
         }
       },
-      "categories": [ 6, 5, 1, 4, 0 ],
-      "createdAt": "2015-12-30T08:41:50.302Z",
-      "name": "billa",
-      "objectId": "qcD.....LCT",
-      "updatedAt": "2015-12-30T09:36:31.547Z"
+      "createdAt": "2015-12-30T12:08:27.655Z",
+      "categories": [1, 2, 1, 4, 0],
+      "name": "listX",
+      "objectId": "rXX.....cb",
+      "position": 1,
+      "updatedAt": "2016-01-07T12:26:44.853Z"
     },
-    { ... }
-    , ...
+    .....
+    {
+    ....
+    }
   ]
+}
+```
+####GET /layout/id
+Same as <code>GET /layout</code> except it returns only one object (or error).
+
+
+####PUT /layout/id
+#####request:
+```
+{
+    "name":"layout 2",
+    "desc":"",
+    "position": 3,
+    "categories": [0, 9, 7],
+    "ACL":{
+      "vX.....N": {
+        "read": true,
+        "write": true
+      }
+    }
+}
+```
+#####response:
+```
+{
+  "updatedAt": "2016-01-10T22:20:45.416Z"
+}
+```
+
+####POST /item
+#####request:
+```
+{
+    "name":"item 3",
+    "desc":"",
+    "category": 2,
+    "list_id": "xA....ew",
+    "ACL":{
+      "vX85j2mq8N": {
+        "read": true,
+        "write": true
+      }
+    }
+}
+```
+#####response:
+```
+{
+  "createdAt": "2016-01-10T22:17:21.216Z",
+  "objectId": "Gq....q2"
+}
+```
+
+
+####GET /item
+#####response:
+```
+{
+  "results": [
+    {
+      "ACL": {
+        "vX......": {
+          "read": true,
+          "write": true
+        }
+      },
+      "category": 0,
+      "createdAt": "2015-12-30T14:27:03.891Z",
+      "desc": "",
+      "list_id": {
+        "__type": "Pointer",
+        "className": "lists",
+        "objectId": "rX.....cb"
+      },
+      "name": "itemmmmm",
+      "objectId": "3....V",
+      "updatedAt": "2016-01-06T10:58:52.639Z"
+    },
+    .....
+    {
+    ....
+    }
+  ]
+}
+```
+####GET /item/id
+Same as <code>GET /item</code> except it returns only one object (or error).
+
+
+####PUT /item/id
+#####request:
+```
+{
+    "name":"item 3",
+    "desc":"",
+    "category": 2,
+    "list_id": "xA....ew",
+    "ACL":{
+      "vX85j2mq8N": {
+        "read": true,
+        "write": true
+      }
+    }
+}
+```
+#####response:
+```
+{
+  "updatedAt": "2016-01-10T22:20:45.416Z"
 }
 ```
 
@@ -162,14 +367,5 @@ With appropriate HTTP status code
   "err": "Message to specify what went wrong."
 }
 ```
-
-
-
-
-
-
-
-
-
 
 

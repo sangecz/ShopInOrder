@@ -25,18 +25,17 @@ app.get('/', function (req, res) {
 var category = require('./server/category');
 var list = require('./server/list');
 var layout = require('./server/layout');
+var item = require('./server/item');
 var auth = require('./server/auth');
 
 //category
-app.get(MY_API + '/category', category.index);
+app.get(MY_API + '/category', category.list);
 
 // list
 app.get(MY_API + '/list', list.list);
 app.get(MY_API + '/list/:id', list.retrieve);
 app.delete(MY_API + '/list/:id', list.delete);
 app.post(MY_API + '/list', list.create);
-
-app.put(MY_API + '/list', list.sync);
 app.put(MY_API + '/list/:id', list.update);
 
 // layout
@@ -44,9 +43,14 @@ app.get(MY_API + '/layout', layout.list);
 app.get(MY_API + '/layout/:id', layout.retrieve);
 app.post(MY_API + '/layout', layout.create);
 app.delete(MY_API + '/layout/:id', layout.delete);
-
-app.put(MY_API + '/layout', layout.sync);
 app.put(MY_API + '/layout/:id', layout.update);
+
+// item
+app.get(MY_API + '/item', item.list);
+app.get(MY_API + '/item/:id', item.retrieve);
+app.post(MY_API + '/item', item.create);
+app.delete(MY_API + '/item/:id', item.delete);
+app.put(MY_API + '/item/:id', item.update);
 
 // auth
 app.post(MY_API + '/register', auth.register);

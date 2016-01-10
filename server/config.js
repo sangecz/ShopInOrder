@@ -11,7 +11,8 @@ module.exports = {
         url: 'https://api.parse.com/1',
         headers: {
             'X-Parse-Application-Id': 'PKeL1iyUnVnfayP2g99XelQRGFQbpWE3P9DASAo6',
-            'X-Parse-REST-API-Key': '3kN0dGXh5X7dMCXk1UmmgWNUZrtG6hyFVdiv6OxV'
+            'X-Parse-REST-API-Key': '3kN0dGXh5X7dMCXk1UmmgWNUZrtG6hyFVdiv6OxV',
+            'Content-Type': 'application/json'
         }
 
     }
