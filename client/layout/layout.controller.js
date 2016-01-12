@@ -19,11 +19,51 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
     $scope.items = [];
     self.categoryNeedSync = false;
     self.layoutNeedSync = false;
+    $scope.data = {};
+    $scope.data.toggleProp = false;
+
+    $scope.crossedItems = [];
+    $scope.newItem = '';
+
+    $scope.sortableOptions = {
+        stop: function(e, ui) {
+            if($scope.items.length > 0) {
+                var prev = $scope.items[0];
+                for (var i = 0; i < $scope.items.length; i++) {
+                    if($scope.items[i] > prev) {
+                        prev = $scope.items[i];
+                    } else {
+                        self.layoutNeedSync = true;
+                    }
+                }
+            }
+            if(self.layoutNeedSync) {
+                self.updateLayoutsPositions();
+            }
+        },
+        axis: 'y'
+    };
 
     // layouts
     self.getLayouts = function(){
-        $http.get(myConfig.MY_API + '/layout').then(function(data) {
-            $scope.items = data.data;
+        $http({
+            url: myConfig.MY_API + '/layout',
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function (res) {
+            for(var i = 0; i < res.data.results.length; i++){
+                var r = res.data.results[i];
+                if(r.crossed == false) {
+                    $scope.items.push(r);
+                } else {
+                    $scope.crossedItems.push(r);
+                }
+            }
+        }, function(res){
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
         });
     };
     self.getLayouts();
@@ -35,20 +75,6 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
         });
     };
     self.getCategories();
-
-    $scope.data = {};
-    $scope.data.toggleProp = false;
-
-    $scope.crossedItems = [];
-    $scope.newItem = '';
-    $scope.texts = myTexts;
-
-    $scope.sortableOptions = {
-        update: function(e, ui) {
-            self.layoutNeedSync = true;
-        },
-        axis: 'y'
-    };
 
     $scope.sortableOptionsCategory = {
         update: function(e, ui) {
@@ -67,22 +93,29 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
             name: $scope.newItem.trim(),
             desc: '',
             crossed: false,
-            created: new Date()
+            categories: [0],
+            position: $scope.items.length,
+            ACL: {}
         };
-        //
         if (!newItem.name) {
             return;
         }
+        var userId = $cookies.get('userId');
+        newItem.ACL[userId] = {
+            read: true,
+            write: true
+        };
 
         $scope.items.push(newItem);
         $scope.newItem = '';
 
         self.layoutNeedSync = true;
+
+        self.addLayout(newItem);
     };
 
     $scope.deleteAll = function() {
-        $scope.crossedItems = [];
-        self.layoutNeedSync = true;
+        self.deleteCrossed();
     };
 
     $scope.editItem = function(item) {
@@ -90,9 +123,8 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
         $scope.edittedItem = item;
         $scope.edittedItem.name = item.name;
         $scope.edittedItem.desc = item.desc;
-        $scope.edittedItem.location = item.location;
 
-        // ad category 'uncategorized' if missing
+        // add category 'uncategorized' if missing
         $scope.edittedItem.categories = JSON.parse("[" + item.categories + "]");
         if($scope.edittedItem.categories.length == 0) {
             $scope.edittedItem.categories.push($scope.categories[0]);
@@ -112,47 +144,43 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
         $location.path('/layout/edit');
     };
 
+
+
     $scope.saveItem = function() {
 
         if(!(typeof $scope.edittedItem.name === 'string')) {
             myToast.showToast(myTexts.msg.emptyName, $mdToast);
             return;
         }
+
+        var categories = [];
+        for(var i = 0; i < $scope.addedCategories.length; i++){
+            categories.push(parseInt($scope.addedCategories[i].id));
+        }
         var layout = {
-            id: sharedProperties.getProperty().item.id,
+            objectId: sharedProperties.getProperty().item.objectId,
             name: $scope.edittedItem.name,
             desc: $scope.edittedItem.desc != undefined ? $scope.edittedItem.desc : '',
-            location: $scope.edittedItem.location != undefined ? $scope.edittedItem.location : '',
-            categories: $scope.addedCategories
+            categories: categories
         };
 
-        $http({
-            url: myConfig.MY_API + '/layout/' + layout.id,
-            method: 'PUT',
-            data: {
-                item: layout
-            },
-            headers: {'Content-Type': 'application/json;charset=utf-8'}
-        }).then(function () {
-            myToast.showToast(myTexts.msg.succSave, $mdToast);
-            self.layoutNeedSync = true;
-            $scope.back();
-        }, function(res){
-            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
-        });
+        self.updateLayout(layout, true);
     };
 
     $scope.crossItem = function(item){
         item.crossed = true;
         self.removeFromArray(item, $scope.items);
         $scope.crossedItems.push(item);
+        self.updateLayout(item, false);
         self.layoutNeedSync = true;
     };
 
     $scope.uncrossItem = function(item){
         item.crossed = false;
         self.removeFromArray(item, $scope.crossedItems);
+        item.position = $scope.items.length;
         $scope.items.push(item);
+        self.updateLayout(item, false);
         self.layoutNeedSync = true;
     };
 
@@ -181,7 +209,6 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
     };
 
     $scope.deleteCategory = function(item){
-        console.log(JSON.stringify(item));
         if(item.id != 0) {
             self.removeFromArray(item, $scope.addedCategories);
             self.categoryNeedSync = true;
@@ -189,12 +216,81 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
             myToast.showToast(myTexts.msg.notRemovable, $mdToast);
         }
     };
-    //--------------- NAVIGATION
 
-    //$scope.back = function (){
-    //    $location.path('/layout');
-    //    $scope.edittedItem = {};
-    //};
+    self.updateLayoutsPositions = function(){
+        // update position
+        for (var i = 0; i < $scope.items.length; i++) {
+            $scope.items[i].position = i;
+        }
+
+        $http({
+            url: myConfig.MY_API + '/layoutUpdatePositions',
+            method: 'PUT',
+            data: $scope.items,
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function (res) {
+            //console.log(JSON.stringify(res));
+        }, function(res){
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
+        });
+    };
+
+    self.addLayout = function (newItem) {
+        $http({
+            url: myConfig.MY_API + '/layout',
+            method: 'POST',
+            data: newItem,
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function (res) {
+            // add generated objectId from server to the newItem
+            $scope.items[$scope.items.length - 1].objectId = res.data.objectId;
+        }, function(res){
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
+        });
+    };
+
+    self.updateLayout = function(layout, edit) {
+        $http({
+            url: myConfig.MY_API + '/layout/' + layout.objectId,
+            method: 'PUT',
+            data: layout,
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function () {
+            if(edit){
+                myToast.showToast(myTexts.msg.succSave, $mdToast);
+                self.layoutNeedSync = true;
+                $scope.back();
+            }
+        }, function (res) {
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
+        });
+    };
+
+    self.deleteCrossed = function() {
+        $http({
+            url: myConfig.MY_API + '/layoutDeleteCrossed',
+            method: 'DELETE',
+            data: $scope.crossedItems,
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function () {
+            $scope.crossedItems = [];
+        }, function (res) {
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
+        });
+    };
+    //--------------- NAVIGATION
 
     $scope.showLists = function(){
         $location.path('/list');
@@ -208,7 +304,5 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
         self.getCategories();
         self.getLayouts();
     };
-
-
 
 });

@@ -3,7 +3,7 @@
  */
 
 
-app.controller("EditItemController", function EditItemController($scope, $location, $http, sharedProperties, $mdToast) {
+app.controller("EditItemController", function EditItemController($cookies, $scope, $location, $http, sharedProperties, $mdToast) {
 
     var self = this;
 
@@ -27,7 +27,6 @@ app.controller("EditItemController", function EditItemController($scope, $locati
     $scope.items = [];
     $scope.categories = [];
     $scope.newItem = '';
-    $scope.texts = myTexts;
     self.itemNeedSync = false;
 
     // categories
@@ -50,44 +49,27 @@ app.controller("EditItemController", function EditItemController($scope, $locati
         $location.path('/item/edit');
     };
 
+    //--------------- NAVIGATION
     $scope.saveItem = function() {
         if(!(typeof $scope.edittedItem.name === 'string')) {
             myToast.showToast(myTexts.msg.emptyName, $mdToast);
             return;
         }
-        var item = {
-            id: sharedProperties.getProperty().item.id,
-            name: $scope.edittedItem.name,
-            desc: $scope.edittedItem.desc != undefined ? $scope.edittedItem.desc : '',
-            categoryId: $scope.edittedItem.categoryId == undefined ? 0 : $scope.edittedItem.categoryId
-        };
-
         $http({
-            url: myConfig.MY_API + '/item/' + item.id,
+            url: myConfig.MY_API + '/item/' + $scope.edittedItem.objectId,
             method: 'PUT',
-            data: {
-                item: item
-            },
-            headers: {'Content-Type': 'application/json;charset=utf-8'}
+            data: $scope.edittedItem,
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
         }).then(function () {
             myToast.showToast(myTexts.msg.succSave, $mdToast);
-            self.itemNeedSync = true;
             $scope.back();
         }, function(res){
             myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
         });
     };
 
-    //--------------- NAVIGATION
-    $scope.saveItem = function() {
-
-        if(!(typeof $scope.edittedItem.name === 'string')) {
-            myToast.showToast(myTexts.msg.emptyName, $mdToast);
-            return;
-        }
-
-        // TODO
-        console.log('save item');
-    };
 
 });

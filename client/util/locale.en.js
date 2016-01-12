@@ -9,7 +9,9 @@ var myTexts = {
     empty: 'Empty list',
 
     lbl: {
+        logout: 'logout',
         name: 'Name',
+        username: 'Username',
         shopName: 'Name of shop',
         desc: 'Description',
         location: 'Location',
@@ -19,6 +21,7 @@ var myTexts = {
         email: 'Email',
         password: 'Password',
         login: 'Login',
+        register: 'Register',
         toggleProp: 'Show/hide properties',
         add: 'Add'
     },
@@ -45,6 +48,7 @@ var myTexts = {
     },
 
     msg: {
+        verifyEmail: 'Verify your email address.',
         emptyName: 'Name could not be empty',
         httpErr: 'Error',
         notRemovable: 'Could not be removed',
@@ -54,7 +58,9 @@ var myTexts = {
         invalidEmail: 'Invalid email address',
         emailRequired: 'Email address is required',
         passwordRequired: 'Password is required',
-        emailPassRequired: 'Email and password are required'
+        usernamePassRequired: 'Username and password are required',
+        emailPassUsernameRequired: 'Username, Email and password are required',
+        usernameRequired: 'Username is required'
     }
 
 };

@@ -4,6 +4,7 @@
 
 var myConfig = require('./config');
 var request = require('request');
+var myUtils = require('./myUtils');
 
 exports.register = function(req, res){
 
@@ -44,7 +45,8 @@ exports.register = function(req, res){
 
                 function cb(error, response, body) {
                     if (!error && response.statusCode == 201) {
-                        res.status(201).json({token: JSON.parse(body).sessionToken});
+                        var parsed = JSON.parse(body);
+                        res.status(201).json({token: parsed.sessionToken, userId: parsed.objectId});
                     } else {
                         res.status(response.statusCode).json({err: JSON.parse(response.body).error});
                     }
@@ -89,7 +91,8 @@ exports.login = function(req, res){
 
                 function cb(error, response, body) {
                     if (!error && response.statusCode == 200) {
-                        res.status(200).json({token: JSON.parse(body).sessionToken});
+                        var parsed = JSON.parse(body);
+                        res.status(201).json({token: parsed.sessionToken, userId: parsed.objectId});
                     } else {
                         res.status(response.statusCode).json({err: JSON.parse(response.body).error});
                     }

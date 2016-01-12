@@ -8,6 +8,7 @@ module.exports = {
     categorySpreadsheetId: '10UxetLBEaLNHB8NxSO2clOmBi8dTNMoh5AS1e4kaTVk',
 
     parseAPI: {
+        version: '/1',
         url: 'https://api.parse.com/1',
         headers: {
             'X-Parse-Application-Id': 'PKeL1iyUnVnfayP2g99XelQRGFQbpWE3P9DASAo6',

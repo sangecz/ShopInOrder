@@ -6,6 +6,28 @@ var myConfig = require('./config');
 var myUtils = require('./myUtils');
 var request = require('request');
 
+exports.listForList = function(req, res){
+
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
+    var list_id = req.params.list_id;
+    var url = myConfig.parseAPI.url + '/classes/items?where={"list_id": {"objectId" : "'+list_id+'", "__type":"Pointer","className":"lists" }}';
+    var options = {
+        method: 'GET',
+        url: url,
+        headers: myConfig.parseAPI.headers
+    };
+    options.headers['X-Parse-Session-Token'] = token;
+
+    function cb(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            res.status(200).json(JSON.parse(body));
+        } else {
+            res.status(response.statusCode).json({err: JSON.parse(response.body).error});
+        }
+    }
+    request(options, cb);
+};
+
 exports.list = function(req, res){
 
     var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
@@ -74,6 +96,63 @@ exports.delete = function(req, res){
     request(options, cb);
 };
 
+exports.deleteCrossed = function(req, res){
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
+    var id = req.params.id;
+
+    var err = false;
+    var items = [];
+    req.on('data', function(chunk) {
+        if(!myUtils.isJSON(chunk)) {
+            err = true;
+            res.status(400).json({err: 'not a valid JSON string'});
+        } else {
+            items = JSON.parse(chunk);
+            console.log(JSON.stringify(items));
+        }
+    });
+
+    req.on('end', function() {
+        if(!err) {
+            var itemsUpdated = [];
+            for(var i = 0; i < items.length && !err; i++) {
+                var list = items[i];
+                if(list.objectId == undefined ){
+                    err = true;
+                    res.status(400).json({err: 'item objectId missing.'});
+                } else {
+                    var itemUpdated = {
+                        method : 'DELETE',
+                        path : myConfig.parseAPI.version + '/classes/items/' + list.objectId.trim()
+                    };
+                    itemsUpdated.push(itemUpdated);
+                }
+                if(err) {
+                    break;
+                }
+            }
+            if(!err) {
+                var options = {
+                    method: 'POST',
+                    url: myConfig.parseAPI.url + '/batch',
+                    headers: myConfig.parseAPI.headers,
+                    body: JSON.stringify({ requests: itemsUpdated })
+                };
+                options.headers['X-Parse-Session-Token'] = token;
+                function cb(error, response, body) {
+                    if (!error && response.statusCode == 200) {
+                        res.status(200).json(JSON.parse(body));
+                    } else {
+                        res.status(response.statusCode).json({err: JSON.parse(response.body).error});
+                    }
+                }
+
+                request(options, cb);
+            }
+        }
+    });
+};
+
 exports.create = function(req, res){
 
     var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
@@ -88,9 +167,10 @@ exports.create = function(req, res){
             var parsedChunk = JSON.parse(chunk);
             item.name = parsedChunk.name;
             item.desc = parsedChunk.desc == undefined ? "" : parsedChunk.desc;
-            item.category = parsedChunk.category;
+            item.category = parseInt(parsedChunk.category);
             item.list_id = parsedChunk.list_id;
             item.ACL = parsedChunk.ACL;
+            item.crossed = parsedChunk.crossed;
         }
     });
 
@@ -98,8 +178,8 @@ exports.create = function(req, res){
 
         if(!err) {
             if (item.name === undefined || item.category === undefined
-                || item.list_id === undefined || item.ACL === undefined) {
-                res.status(400).json({err: 'missing required parameter (name, category, list_id, ACL)'});
+                || item.list_id === undefined || item.ACL === undefined || item.crossed == undefined) {
+                res.status(400).json({err: 'missing required parameter (name, category, list_id, ACL, crossed)'});
             } else if (!(typeof item.name === 'string')) {
                 res.status(400).json({err: 'bad item name'});
             } else if (!(typeof item.desc === 'string')) {
@@ -108,8 +188,11 @@ exports.create = function(req, res){
                 res.status(400).json({err: 'bad item category'});
             } else if (!(typeof item.ACL === 'object')) {
                 res.status(400).json({err: 'bad item ACL'});
+            } else if (!(typeof item.list_id === 'object')) {
+                res.status(400).json({err: 'bad item list_id'});
+            } else if (!(typeof item.crossed === 'boolean')) {
+                res.status(400).json({err: 'bad item crossed'});
             } else {
-
 
                 var options = {
                     method: 'POST',
@@ -125,27 +208,7 @@ exports.create = function(req, res){
                         res.status(response.statusCode).json({err: JSON.parse(response.body).error});
                     }
                 }
-
-                existsList(item.list_id, token, function (proceed, errMsg) {
-                    if (!proceed) {
-                        res.status(400).json({err: errMsg});
-                    } else if (item.list_id != "") {
-                        // adjustment for Parse
-                        if (item.list_id == null) {
-                            item.list_id = null;
-                        } else {
-                            item.list_id = {
-                                __type: "Pointer",
-                                className: "lists",
-                                objectId: item.list_id
-                            };
-                        }
-
-                        options.body = JSON.stringify(item);
-
-                        request(options, cb);
-                    }
-                });
+                request(options, cb);
             }
         }
     });
@@ -165,11 +228,11 @@ exports.update = function(req, res){
             var parsedChunk = JSON.parse(chunk);
             item.name = parsedChunk.name;
             item.desc = parsedChunk.desc;
-            item.category = parsedChunk.category;
+            item.category = parseInt(parsedChunk.category);
             item.list_id = parsedChunk.list_id;
             item.ACL = parsedChunk.ACL;
+            item.crossed = parsedChunk.crossed;
         }
-
     });
 
     req.on('end', function() {
@@ -179,6 +242,7 @@ exports.update = function(req, res){
             if (item.name != undefined) {
                 if (!(typeof item.name === 'string')) {
                     res.status(400).json({err: 'bad item name'});
+                    err = true;
                 } else if (item.name != "") {
                     itemUpdated.name = item.name;
                 }
@@ -186,6 +250,7 @@ exports.update = function(req, res){
             if (item.desc != undefined) {
                 if (!(typeof item.desc === 'string')) {
                     res.status(400).json({err: 'bad item description'});
+                    err = true;
                 } else {
                     itemUpdated.desc = item.desc;
                 }
@@ -193,31 +258,37 @@ exports.update = function(req, res){
             if (item.category != undefined) {
                 if (!myUtils.isNumber(item.category)) {
                     res.status(400).json({err: 'bad item category'});
-                } else if (item.category != "") {
+                    err = true;
+                } else  {
                     itemUpdated.category = item.category;
                 }
             }
             if (item.ACL != undefined) {
                 if (!(typeof item.ACL === 'object')) {
                     res.status(400).json({err: 'bad item ACL'});
-                } else if (item.ACL != "") {
+                    err = true;
+                } else {
                     itemUpdated.ACL = item.ACL;
                 }
             }
+            if (item.crossed != undefined) {
+                if (!(typeof item.crossed === 'boolean')) {
+                    res.status(400).json({err: 'bad item crossed'});
+                    err = true;
+                } else  {
+                    itemUpdated.crossed = item.crossed;
+                }
+            }
             if (item.list_id != undefined) {
-                existsList(item.list_id, token, function (proceed, errMsg) {
-                    if (!proceed) {
-                        res.status(400).json({err: errMsg});
-                    } else {
-                        itemUpdated.list_id = item.list_id;
-                        next();
-                    }
-                });
-            } else {
-                next();
+                if (!(typeof item.list_id === 'object')) {
+                    res.status(400).json({err: 'bad item list_id'});
+                    err = true;
+                } else {
+                    itemUpdated.list_id = item.list_id;
+                }
             }
 
-            function next() {
+            if(!err){
                 var options = {
                     method: 'PUT',
                     url: myConfig.parseAPI.url + '/classes/items/' + id.trim(),
@@ -232,56 +303,12 @@ exports.update = function(req, res){
                         res.status(response.statusCode).json({err: JSON.parse(response.body).error});
                     }
                 }
-
-                // adjustment for Parse
-                if (item.list_id == null) {
-                    itemUpdated.list_id = null;
-                } else {
-                    itemUpdated.list_id = {
-                        __type: "Pointer",
-                        className: "lists",
-                        objectId: item.list_id
-                    };
-                }
-                options.body = JSON.stringify(itemUpdated);
-
                 request(options, cb);
             }
+
         }
     });
 };
-
-function existsList(list_id, token, callback) {
-    if(list_id === null) {
-        callback(true, null);
-        return;
-    }
-    if(!(typeof list_id === 'string')){
-        callback(false, 'item list_id not a string');
-        return;
-    }
-    if(list_id === ''){
-        callback(false, 'item list_id could not by empty string');
-        return;
-    }
-
-    var url = myConfig.parseAPI.url + '/classes/lists/' + list_id.trim();
-    var options = {
-        method: 'GET',
-        url: url,
-        headers: myConfig.parseAPI.headers
-    };
-    options.headers['X-Parse-Session-Token'] = token;
-
-    function cb(error, response, body) {
-        if (response.statusCode == 404) {
-            callback(false, "item list_id '" + list_id +"' does not exists");
-        } else {
-            callback(true, null);
-        }
-    }
-    request(options, cb);
-}
 
 
 

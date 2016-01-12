@@ -10,7 +10,7 @@ exports.list = function(req, res){
 
     var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
 
-    var url = myConfig.parseAPI.url + '/classes/lists';
+    var url = myConfig.parseAPI.url + '/classes/lists?order=position';
     var options = {
         method: 'GET',
         url: url,
@@ -74,6 +74,62 @@ exports.delete = function(req, res){
     request(options, cb);
 };
 
+exports.deleteCrossed = function(req, res){
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
+    var id = req.params.id;
+
+    var err = false;
+    var lists = [];
+    req.on('data', function(chunk) {
+        if(!myUtils.isJSON(chunk)) {
+            err = true;
+            res.status(400).json({err: 'not a valid JSON string'});
+        } else {
+            lists = JSON.parse(chunk);
+        }
+    });
+
+    req.on('end', function() {
+        if(!err) {
+            var listsUpdated = [];
+            for(var i = 0; i < lists.length && !err; i++) {
+                var list = lists[i];
+                if(list.objectId == undefined ){
+                    err = true;
+                    res.status(400).json({err: 'list objectId missing.'});
+                } else {
+                    var listUpdated = {
+                        method : 'DELETE',
+                        path : myConfig.parseAPI.version + '/classes/lists/' + list.objectId.trim()
+                    };
+                    listsUpdated.push(listUpdated);
+                }
+                if(err) {
+                    break;
+                }
+            }
+            if(!err) {
+                var options = {
+                    method: 'POST',
+                    url: myConfig.parseAPI.url + '/batch',
+                    headers: myConfig.parseAPI.headers,
+                    body: JSON.stringify({ requests: listsUpdated })
+                };
+                options.headers['X-Parse-Session-Token'] = token;
+                function cb(error, response, body) {
+                    if (!error && response.statusCode == 200) {
+                        res.status(200).json(JSON.parse(body));
+                    } else {
+                        res.status(response.statusCode).json({err: JSON.parse(response.body).error});
+                    }
+                }
+
+                request(options, cb);
+            }
+        }
+    });
+};
+
 exports.create = function(req, res){
 
     var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
@@ -91,6 +147,7 @@ exports.create = function(req, res){
             list.position = parsedChunk.position;
             list.layout_id = parsedChunk.layout_id;
             list.ACL = parsedChunk.ACL;
+            list.crossed = parsedChunk.crossed;
         }
     });
 
@@ -98,8 +155,8 @@ exports.create = function(req, res){
 
         if(!err) {
             if (list.name === undefined || list.position === undefined
-                || list.layout_id === undefined || list.ACL === undefined) {
-                res.status(400).json({err: 'missing required parameter (name, position, layout_id, ACL)'});
+                || list.layout_id === undefined || list.ACL === undefined || list.crossed == undefined) {
+                res.status(400).json({err: 'missing required parameter (name, position, layout_id, ACL, crossed)'});
             } else if (!(typeof list.name === 'string')) {
                 res.status(400).json({err: 'bad list name'});
             } else if (!(typeof list.desc === 'string')) {
@@ -108,8 +165,11 @@ exports.create = function(req, res){
                 res.status(400).json({err: 'bad list position'});
             } else if (!(typeof list.ACL === 'object')) {
                 res.status(400).json({err: 'bad list ACL'});
+            } else if (!(typeof list.layout_id === 'object')) {
+                res.status(400).json({err: 'bad list layout_id'});
+            } else if (!(typeof list.crossed === 'boolean')) {
+                res.status(400).json({err: 'bad list crossed'});
             } else {
-
 
                 var options = {
                     method: 'POST',
@@ -126,26 +186,7 @@ exports.create = function(req, res){
                     }
                 }
 
-                existsLayout(list.layout_id, token, function (proceed, errMsg) {
-                    if (!proceed) {
-                        res.status(400).json({err: errMsg});
-                    } else if (list.layout_id != "") {
-                        // adjustment for Parse
-                        if (list.layout_id == null) {
-                            list.layout_id = null;
-                        } else {
-                            list.layout_id = {
-                                __type: "Pointer",
-                                className: "layouts",
-                                objectId: list.layout_id
-                            };
-                        }
-
-                        options.body = JSON.stringify(list);
-
-                        request(options, cb);
-                    }
-                });
+                request(options, cb);
             }
         }
     });
@@ -168,6 +209,7 @@ exports.update = function(req, res){
             list.position = parsedChunk.position;
             list.layout_id = parsedChunk.layout_id;
             list.ACL = parsedChunk.ACL;
+            list.crossed = parsedChunk.crossed;
         }
 
     });
@@ -175,49 +217,8 @@ exports.update = function(req, res){
     req.on('end', function() {
 
         if(!err) {
-            var listUpdated = {};
-            if (list.name != undefined) {
-                if (!(typeof list.name === 'string')) {
-                    res.status(400).json({err: 'bad list name'});
-                } else if (list.name != "") {
-                    listUpdated.name = list.name;
-                }
-            }
-            if (list.desc != undefined) {
-                if (!(typeof list.desc === 'string')) {
-                    res.status(400).json({err: 'bad list description'});
-                } else {
-                    listUpdated.desc = list.desc;
-                }
-            }
-            if (list.position != undefined) {
-                if (!myUtils.isNumber(list.position)) {
-                    res.status(400).json({err: 'bad list position'});
-                } else if (list.position != "") {
-                    listUpdated.position = list.position;
-                }
-            }
-            if (list.ACL != undefined) {
-                if (!(typeof list.ACL === 'object')) {
-                    res.status(400).json({err: 'bad list ACL'});
-                } else if (list.ACL != "") {
-                    listUpdated.ACL = list.ACL;
-                }
-            }
-            if (list.layout_id != undefined) {
-                existsLayout(list.layout_id, token, function (proceed, errMsg) {
-                    if (!proceed) {
-                        res.status(400).json({err: errMsg});
-                    } else {
-                        listUpdated.layout_id = list.layout_id;
-                        next();
-                    }
-                });
-            } else {
-                next();
-            }
-
-            function next() {
+            var listUpdated = getValidatedList(list, res);
+            if(listUpdated != false) {  // !=error occured
                 var options = {
                     method: 'PUT',
                     url: myConfig.parseAPI.url + '/classes/lists/' + id.trim(),
@@ -233,17 +234,62 @@ exports.update = function(req, res){
                     }
                 }
 
-                // adjustment for Parse
-                if (list.layout_id == null) {
-                    listUpdated.layout_id = null;
+                request(options, cb);
+            }
+        }
+    });
+};
+
+exports.updatePositions = function(req, res){
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
+    var id = req.params.id;
+
+    var err = false;
+    var lists = [];
+    req.on('data', function(chunk) {
+        if(!myUtils.isJSON(chunk)) {
+            err = true;
+            res.status(400).json({err: 'not a valid JSON string'});
+        } else {
+            lists = JSON.parse(chunk);
+        }
+    });
+
+    req.on('end', function() {
+        if(!err) {
+            var listsUpdated = [];
+            for(var i = 0; i < lists.length && !err; i++) {
+                var list = lists[i];
+                if(list.objectId == undefined || list.position == undefined){
+                    err = true;
+                    res.status(400).json({err: 'list objectId or position missing.'});
                 } else {
-                    listUpdated.layout_id = {
-                        __type: "Pointer",
-                        className: "layouts",
-                        objectId: list.layout_id
+                    var listUpdated = {
+                        method : 'PUT',
+                        path : myConfig.parseAPI.version + '/classes/lists/' + list.objectId.trim(),
+                        body : { position: list.position }
                     };
+                    listsUpdated.push(listUpdated);
                 }
-                options.body = JSON.stringify(listUpdated);
+                if(err) {
+                    break;
+                }
+            }
+            if(!err) {
+                var options = {
+                    method: 'POST',
+                    url: myConfig.parseAPI.url + '/batch',
+                    headers: myConfig.parseAPI.headers,
+                    body: JSON.stringify({ requests: listsUpdated })
+                };
+                options.headers['X-Parse-Session-Token'] = token;
+                function cb(error, response, body) {
+                    if (!error && response.statusCode == 200) {
+                        res.status(200).json(JSON.parse(body));
+                    } else {
+                        res.status(response.statusCode).json({err: JSON.parse(response.body).error});
+                    }
+                }
 
                 request(options, cb);
             }
@@ -251,34 +297,55 @@ exports.update = function(req, res){
     });
 };
 
-function existsLayout(layout_id, token, callback) {
-    if(layout_id === null) {
-        callback(true, null);
-        return;
-    }
-    if(!(typeof layout_id === 'string')){
-        callback(false, 'list layout_id not a string');
-        return;
-    }
-    if(layout_id === ''){
-        callback(false, 'list layout_id could not by empty string');
-        return;
-    }
-
-    var url = myConfig.parseAPI.url + '/classes/layouts/' + layout_id.trim();
-    var options = {
-        method: 'GET',
-        url: url,
-        headers: myConfig.parseAPI.headers
-    };
-    options.headers['X-Parse-Session-Token'] = token;
-
-    function cb(error, response, body) {
-        if (response.statusCode == 404) {
-            callback(false, "list layout_id '" + layout_id +"' does not exists");
-        } else {
-            callback(true, null);
+function getValidatedList(list, res){
+    var listUpdated = {};
+    if (list.name != undefined) {
+        if (!(typeof list.name === 'string')) {
+            res.status(400).json({err: 'bad list name'});
+            return false;
+        } else if (list.name != "") {
+            listUpdated.name = list.name;
         }
     }
-    request(options, cb);
+    if (list.desc != undefined) {
+        if (!(typeof list.desc === 'string')) {
+            res.status(400).json({err: 'bad list description'});
+            return false;
+        } else {
+            listUpdated.desc = list.desc;
+        }
+    }
+    if (list.position != undefined) {
+        if (!myUtils.isNumber(list.position)) {
+            res.status(400).json({err: 'bad list position'});
+            return false;
+        } else {
+            listUpdated.position = list.position;
+        }
+    }
+    if (list.ACL != undefined) {
+        if (!(typeof list.ACL === 'object')) {
+            res.status(400).json({err: 'bad list ACL'});
+            return false;
+        } else  {
+            listUpdated.ACL = list.ACL;
+        }
+    }
+    if (list.crossed != undefined) {
+        if (!(typeof list.crossed === 'boolean')) {
+            res.status(400).json({err: 'bad list crossed'});
+            return false;
+        } else  {
+            listUpdated.crossed = list.crossed;
+        }
+    }
+    if (list.layout_id != undefined) {
+        if (!(typeof list.layout_id === 'object')) {
+            res.status(400).json({err: 'bad list layout'});
+            return false;
+        } else {
+            listUpdated.layout_id = list.layout_id;
+        }
+    }
+    return listUpdated;
 }

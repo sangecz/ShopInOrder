@@ -3,5 +3,6 @@
  */
 
 var myConfig = {
-    MY_API: '/api/1.0'
+    MY_API: 'https://localhost:8443/api/1.0',
+    projectURL: 'https://gitlab.fel.cvut.cz/marekp11/shopinorder/tree/master'
 };

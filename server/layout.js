@@ -10,7 +10,7 @@ exports.list = function(req, res){
 
     var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
 
-    var url = myConfig.parseAPI.url + '/classes/layouts';
+    var url = myConfig.parseAPI.url + '/classes/layouts?order=position';
     var options = {
         method: 'GET',
         url: url,
@@ -74,6 +74,62 @@ exports.delete = function(req, res){
     request(options, cb);
 };
 
+exports.deleteCrossed = function(req, res){
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
+    var id = req.params.id;
+
+    var err = false;
+    var layouts = [];
+    req.on('data', function(chunk) {
+        if(!myUtils.isJSON(chunk)) {
+            err = true;
+            res.status(400).json({err: 'not a valid JSON string'});
+        } else {
+            layouts = JSON.parse(chunk);
+        }
+    });
+
+    req.on('end', function() {
+        if(!err) {
+            var layoutsUpdated = [];
+            for(var i = 0; i < layouts.length && !err; i++) {
+                var list = layouts[i];
+                if(list.objectId == undefined ){
+                    err = true;
+                    res.status(400).json({err: 'layout objectId missing.'});
+                } else {
+                    var layoutUpdated = {
+                        method : 'DELETE',
+                        path : myConfig.parseAPI.version + '/classes/layouts/' + list.objectId.trim()
+                    };
+                    layoutsUpdated.push(layoutUpdated);
+                }
+                if(err) {
+                    break;
+                }
+            }
+            if(!err) {
+                var options = {
+                    method: 'POST',
+                    url: myConfig.parseAPI.url + '/batch',
+                    headers: myConfig.parseAPI.headers,
+                    body: JSON.stringify({ requests: layoutsUpdated })
+                };
+                options.headers['X-Parse-Session-Token'] = token;
+                function cb(error, response, body) {
+                    if (!error && response.statusCode == 200) {
+                        res.status(200).json(JSON.parse(body));
+                    } else {
+                        res.status(response.statusCode).json({err: JSON.parse(response.body).error});
+                    }
+                }
+
+                request(options, cb);
+            }
+        }
+    });
+};
+
 exports.create = function(req, res){
 
     var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
@@ -91,14 +147,15 @@ exports.create = function(req, res){
             layout.position = parsedChunk.position;
             layout.categories = parsedChunk.categories;
             layout.ACL = parsedChunk.ACL;
+            layout.crossed = parsedChunk.crossed;
         }
     });
 
     req.on('end', function() {
         if(!err) {
             if (layout.name == undefined || layout.position == undefined
-                || layout.categories == undefined || layout.ACL == undefined) {
-                res.status(400).json({err: 'missing required parameter (name, position, categories, ACL)'});
+                || layout.categories == undefined || layout.ACL == undefined || layout.crossed == undefined) {
+                res.status(400).json({err: 'missing required parameter (name, position, categories, ACL, crossed)'});
             } else if (!(typeof layout.name === 'string')) {
                 res.status(400).json({err: 'bad layout name'});
             } else if (!(typeof layout.desc === 'string')) {
@@ -107,6 +164,8 @@ exports.create = function(req, res){
                 res.status(400).json({err: 'bad layout position'});
             } else if (!(typeof layout.ACL === 'object')) {
                 res.status(400).json({err: 'bad layout ACL'});
+            } else if (!(typeof layout.crossed === 'boolean')) {
+                res.status(400).json({err: 'bad layout crossed'});
             } else {
                 var options = {
                     method: 'POST',
@@ -152,6 +211,7 @@ exports.update = function(req, res){
             layout.position = parsedChunk.position;
             layout.categories = parsedChunk.categories;
             layout.ACL = parsedChunk.ACL;
+            layout.crossed = parsedChunk.crossed;
         }
     });
 
@@ -175,22 +235,29 @@ exports.update = function(req, res){
             if (layout.position != undefined) {
                 if (!myUtils.isNumber(layout.position)) {
                     res.status(400).json({err: 'bad layout position'});
-                } else if (layout.position != "") {
+                } else {
                     layoutUpdated.position = layout.position;
                 }
             }
             if (layout.ACL != undefined) {
                 if (!(typeof layout.ACL === 'object')) {
                     res.status(400).json({err: 'bad layout ACL'});
-                } else if (layout.ACL != "") {
+                } else {
                     layoutUpdated.ACL = layout.ACL;
+                }
+            }
+            if (layout.crossed != undefined) {
+                if (!(typeof layout.crossed === 'boolean')) {
+                    res.status(400).json({err: 'bad layout crossed'});
+                } else {
+                    layoutUpdated.crossed = layout.crossed;
                 }
             }
             if (layout.categories != undefined) {
                 onlyPossibleCategories(layout.categories, function (proceed, errMsg) {
                     if (!proceed) {
                         res.status(400).json({err: errMsg});
-                    } else if (layout.categories != "") {
+                    } else {
                         layoutUpdated.categories = layout.categories;
                         next();
                     }
@@ -205,6 +272,66 @@ exports.update = function(req, res){
                     url: myConfig.parseAPI.url + '/classes/layouts/' + id,
                     headers: myConfig.parseAPI.headers,
                     body: JSON.stringify(layoutUpdated)
+                };
+                options.headers['X-Parse-Session-Token'] = token;
+                function cb(error, response, body) {
+                    if (!error && response.statusCode == 200) {
+                        res.status(200).json(JSON.parse(body));
+                    } else {
+                        res.status(response.statusCode).json({err: JSON.parse(response.body).error});
+                    }
+                }
+
+                request(options, cb);
+            }
+        }
+    });
+};
+
+exports.updatePositions = function(req, res){
+    var token = req.headers.token != undefined &&  req.headers.token != null ?  req.headers.token : '';
+    var id = req.params.id;
+
+    var err = false;
+    var layouts = [];
+    req.on('data', function(chunk) {
+        if(!myUtils.isJSON(chunk)) {
+            err = true;
+            res.status(400).json({err: 'not a valid JSON string'});
+        } else {
+            layouts = JSON.parse(chunk);
+        }
+
+    });
+
+    req.on('end', function() {
+
+
+        if(!err) {
+            var layoutsUpdated = [];
+            for(var i = 0; i < layouts.length && !err; i++) {
+                var layout = layouts[i];
+                if(layout.objectId == undefined || layout.position == undefined){
+                    err = true;
+                    res.status(400).json({err: 'layout objectId or position missing.'});
+                } else {
+                    var layoutUpdated = {
+                        method : 'PUT',
+                        path : myConfig.parseAPI.version + '/classes/layouts/' + layout.objectId.trim(),
+                        body : { position: layout.position }
+                    };
+                    layoutsUpdated.push(layoutUpdated);
+                }
+                if(err) {
+                    break;
+                }
+            }
+            if(!err) {
+                var options = {
+                    method: 'POST',
+                    url: myConfig.parseAPI.url + '/batch',
+                    headers: myConfig.parseAPI.headers,
+                    body: JSON.stringify({ requests: layoutsUpdated })
                 };
                 options.headers['X-Parse-Session-Token'] = token;
                 function cb(error, response, body) {

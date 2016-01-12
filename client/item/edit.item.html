@@ -17,7 +17,7 @@
         </md-input-container>
         <md-input-container class="md-block">
             <label>{{texts.lbl.category}}</label>
-            <md-select ng-model="edittedItem.categoryId">
+            <md-select ng-model="edittedItem.category">
                 <md-option value="{{c.id}}" ng-repeat="c in categories" required>{{c.name}}</md-option>
             </md-select>
         </md-input-container>

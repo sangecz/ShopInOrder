@@ -1,13 +1,13 @@
 <div ng-include="'../components/toolbar.html'"></div>
 
 <div class="container-content">
+    <h3>{{data.title}}</h3>
     <form name="myForm">
         <md-input-container class="md-block">
-            <label>{{texts.lbl.email}}</label>
-            <input name="email" type="email" ng-model="user.email" required>
-            <span style="color:red" ng-show="myForm.email.$dirty && myForm.email.$invalid">
-                <span ng-show="myForm.email.$error.required">{{texts.msg.emailRequired}}</span>
-                <span ng-show="myForm.email.$error.email">{{texts.msg.invalidEmail}}</span>
+            <label>{{texts.lbl.username}}</label>
+            <input name="username" type="text" ng-model="user.username" required>
+            <span style="color:red" ng-show="myForm.username.$dirty && myForm.username.$invalid">
+                <span ng-show="myForm.username.$error.required">{{texts.msg.usernameRequired}}</span>
             </span>
         </md-input-container>
         <md-input-container class="md-block">
@@ -17,8 +17,17 @@
                 <span ng-show="myForm.password.$error.required">{{texts.msg.passwordRequired}}</span>
             </span>
         </md-input-container>
+        <md-input-container class="md-block" ng-show="data.registerToggle">
+            <label>{{texts.lbl.email}}</label>
+            <input name="email" type="email" ng-model="user.email" required>
+            <span style="color:red" ng-show="myForm.email.$dirty && myForm.email.$invalid">
+                <span ng-show="myForm.email.$error.required">{{texts.msg.emailRequired}}</span>
+                <span ng-show="myForm.email.$error.email">{{texts.msg.invalidEmail}}</span>
+            </span>
+        </md-input-container>
         <md-input-container>
-            <md-button ng-click="login()" class="md-raised">{{texts.lbl.login}}</md-button>
+            <md-button ng-click="loginRegister()" class="md-raised md-primary">{{data.registerToggle ? texts.lbl.register : texts.lbl.login}}</md-button>
+            <md-button ng-click="toggleRegister()" class="md-raised">{{data.registerToggle ? texts.lbl.login : texts.lbl.register}}</md-button>
         </md-input-container>
     </form>
 </div>

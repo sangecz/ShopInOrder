@@ -1,10 +1,16 @@
 app.controller("EditListController", function ListController($scope, $location, sharedProperties, $http, $mdToast, $cookies) {
     var self = this;
 
-    $scope.texts = myTexts;
     self.listNeedSync = false;
     $scope.edittedList = {};
     $scope.edittedList.name = "";
+    $scope.crossedItemsNum = 0;
+    $scope.crossedItems = [];
+    self.items = [];
+    $scope.newItem = {};
+    $scope.newItem.name = '';
+    $scope.newItem.category = 0;
+    self.itemNeedSync = false;
 
     self.checkProperties = function() {
         if(sharedProperties.getProperty() != null && sharedProperties.getProperty().list !== undefined){
@@ -19,109 +25,183 @@ app.controller("EditListController", function ListController($scope, $location, 
     // layouts
     $scope.layouts = [];
     self.getLayouts = function(){
-        $http.get(myConfig.MY_API + '/layout').then(function(data) {
-            $scope.layouts = data.data;
-            if($scope.edittedList !== undefined) {
-                self.getCategories();
+        $http({
+            url: myConfig.MY_API + '/layout',
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
             }
+        }).then(function (res) {
+            for(var i = 0; i < res.data.results.length; i++){
+                var r = res.data.results[i];
+                $scope.layouts.push(r);
+            }
+        }, function(res){
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
         });
     };
     self.getLayouts();
 
-    $scope.saveItem = function(item) {
+    $scope.saveList = function() {
         if(!(typeof $scope.edittedList.name === 'string')) {
             myToast.showToast(myTexts.msg.emptyName, $mdToast);
             return;
         }
-
         var list = $scope.edittedList;
+        list.layout_id = {
+            objectId: list.layout_id.objectId,
+            '__type': "Pointer",
+            className: "layouts"
+        };
 
+        self.updateList(list);
+    };
+
+    self.updateList = function(list) {
         $http({
-            url: myConfig.MY_API + '/list/' + list.id,
+            url: myConfig.MY_API + '/list/' + list.objectId,
             method: 'PUT',
-            data: {
-                item: list
-            },
-            headers: {'Content-Type': 'application/json;charset=utf-8'}
-        }).then(function () {
+            data: list,
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function (res) {
             myToast.showToast(myTexts.msg.succSave, $mdToast);
-            self.listNeedSync = true;
-        }, function(res){
+            $scope.back();
+        }, function (res) {
             myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
         });
     };
 
 
-    $scope.crossedItemsNum = 0;
-    $scope.crossedItems = [];
-    self.items = [
-        {name: 'ew', categoryId: 0, crossed: false},
-        {name: 'esv', categoryId: 6, crossed: false},
-        {name: 'sdvsvsd', categoryId: 2, crossed: false},
-        {name: 'ngn', categoryId: 2, crossed: false},
-        {name: 'asdasdasd', categoryId: 4, crossed: false}
-    ];
+    self.getItems = function(){
+        $http({
+            url: myConfig.MY_API + '/itemForList/' + $scope.edittedList.objectId,
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function (res) {
+            var cnt = 0;
+            for(var i = 0; i < res.data.results.length; i++){
+                var r = res.data.results[i];
+                if(r.crossed){
+                    cnt++;
+                    $scope.crossedItems.push(r);
+                }
+                self.items.push(r);
+            }
+            $scope.crossedItemsNum = cnt;
+            self.getCategories();
+        }, function(res){
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
+        });
+    };
+    self.getItems();
     $scope.itemsOrganized = [];
     $scope.categories = [];
     // categories
     self.getCategories = function(){
         $http.get(myConfig.MY_API + '/category').then(function(data) {
             $scope.categories = data.data;
-            $scope.categorizeItems($scope.edittedList.layoutId);
+            $scope.categorizeItems($scope.edittedList.layout_id);
         });
     };
-
-
-    $scope.newItem = {};
-    $scope.newItem.name = '';
-    $scope.newItem.categoryId = 0;
-    $scope.texts = myTexts;
-    self.itemNeedSync = false;
 
     $scope.addItem = function() {
 
         var newItem = {
             name: $scope.newItem.name.trim(),
             desc: "",
-            categoryId: $scope.newItem.categoryId,
+            category: $scope.newItem.category,
             crossed: false,
-            created: new Date()
+            position: self.items.length,
+            ACL: {},
+            list_id: {
+                '__type': "Pointer",
+                className: "lists",
+                objectId: $scope.edittedList.objectId
+            }
         };
-        //
+        var userId = $cookies.get('userId');
+        newItem.ACL[userId] = {
+            read: true,
+            write: true
+        };
+
         if (!newItem.name) {
             return;
         }
 
-        for(var c = 0; c < $scope.itemsOrganized.length; c++){
-            if(newItem.categoryId == $scope.itemsOrganized[c].id){
-                $scope.itemsOrganized[c].arr.push(newItem);
-                break;
-            }
-        }
-
         $scope.newItem.name = '';
-        $scope.newItem.categoryId = 0;
+        $scope.newItem.category = 0;
 
         self.itemNeedSync = true;
+        self.addNewItem(newItem);
+    };
+
+    self.addNewItem = function (newItem) {
+        $http({
+            url: myConfig.MY_API + '/item',
+            method: 'POST',
+            data: newItem,
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function (res) {
+            // add generated objectId from server to the newItem
+            self.items[self.items.length - 1].objectId = res.data.objectId;
+            newItem.objectId = res.data.objectId;
+
+            for(var c = 0; c < $scope.itemsOrganized.length; c++){
+                if(newItem.category == $scope.itemsOrganized[c].id){
+                    $scope.itemsOrganized[c].arr.push(newItem);
+                    break;
+                }
+            }
+        }, function(res){
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
+        });
     };
 
     $scope.deleteAll = function() {
-        var itemsToDelete = [];
-        for(var i = 0; i < $scope.itemsOrganized.length; i++) {
-            var cat = $scope.itemsOrganized[i];
-            for(var j = 0; j < cat.arr.length; j++) {
-                if(cat.arr[j].crossed == true) {
-                    itemsToDelete.push(cat.arr[j]);
+        self.deleteCrossed();
+    };
+
+    self.deleteCrossed = function() {
+        console.log(JSON.stringify($scope.crossedItems));
+        $http({
+            url: myConfig.MY_API + '/itemDeleteCrossed',
+            method: 'DELETE',
+            data: $scope.crossedItems,
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function () {
+            var itemsToDelete = [];
+            for(var i = 0; i < $scope.itemsOrganized.length; i++) {
+                var cat = $scope.itemsOrganized[i];
+                for(var j = 0; j < cat.arr.length; j++) {
+                    if(cat.arr[j].crossed == true) {
+                        itemsToDelete.push(cat.arr[j]);
+                    }
                 }
             }
-        }
-        for(var k = 0; k < itemsToDelete.length; k++) {
-            var item = itemsToDelete[k];
-            self.removeFromArray(item, $scope.itemsOrganized[item.categoryId].arr);
-        }
-        $scope.crossedItemsNum = 0;
+            for(var k = 0; k < itemsToDelete.length; k++) {
+                var item = itemsToDelete[k];
+                self.removeFromArray(item, $scope.itemsOrganized[item.category].arr);
+            }
+            $scope.crossedItemsNum = 0;
 
-        self.itemNeedSync = true;
+            self.itemNeedSync = true;
+        }, function (res) {
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
+        });
     };
 
     $scope.editItem = function(item) {
@@ -132,17 +212,36 @@ app.controller("EditListController", function ListController($scope, $location, 
     $scope.crossItem = function(item){
         item.crossed = true;
         //self.removeFromArray(item, $scope.items);
-        //$scope.crossedItems.push(item);
+        $scope.crossedItems.push(item);
         $scope.crossedItemsNum++;
         self.itemNeedSync = true;
+        self.updateItem(item);
     };
 
     $scope.uncrossItem = function(item){
         item.crossed = false;
-        //self.removeFromArray(item, $scope.crossedItems);
+        self.removeFromArray(item, $scope.crossedItems);
         //$scope.items.push(item);
         $scope.crossedItemsNum--;
         self.itemNeedSync = true;
+        self.updateItem(item);
+    };
+
+    self.updateItem = function(item) {
+        //console.log(JSON.stringify(item));
+        $http({
+            url: myConfig.MY_API + '/item/' + item.objectId,
+            method: 'PUT',
+            data: item,
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                'token': $cookies.get('token')
+            }
+        }).then(function (res) {
+            console.log(JSON.stringify(res.data));
+        }, function (res) {
+            myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
+        });
     };
 
     $scope.categoryHasChild = function(cat){
@@ -164,13 +263,11 @@ app.controller("EditListController", function ListController($scope, $location, 
         }
     };
 
-    $scope.categorizeItems = function (layoutId) {
-        console.log(layoutId);
+    $scope.categorizeItems = function (layout_id) {
         $scope.itemsOrganized = [];
         for(var k = 0; k < $scope.layouts.length; k++) {
-            if ($scope.layouts[k].id == layoutId) {
+            if ($scope.layouts[k].objectId == layout_id) {
                 var categories = JSON.parse('[' + $scope.layouts[k].categories + ']');
-
                 for(var c = 0; c < categories.length; c++){
                     var catId = categories[c];
                     for(var cat = 0; cat < $scope.categories.length; cat++){
@@ -208,17 +305,18 @@ app.controller("EditListController", function ListController($scope, $location, 
         addRemainingCategories($scope.categories);
 
         // fills items into categorized array
-
         for(var j = 0; j < self.items.length; j++){
             for(var k = 0; k < $scope.itemsOrganized.length; k++){
-                if(self.items[j].categoryId == $scope.itemsOrganized[k].id){
+                if(self.items[j].category == $scope.itemsOrganized[k].id){
                     $scope.itemsOrganized[k].arr.push(self.items[j]);
                 }
             }
         }
         //$scope.itemsOrganized = $scope.itemsOrganized;
 
-        console.log("ORGANIZED: " + JSON.stringify($scope.itemsOrganized));
+        //console.log("ORGANIZED: " + JSON.stringify($scope.itemsOrganized));
     };
+
+
 
 });

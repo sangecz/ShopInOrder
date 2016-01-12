@@ -60,6 +60,10 @@ var app = angular.module("sio", [
                 templateUrl: 'auth/login.html',
                 controller: 'AuthController'
             })
+            .when('/register', {
+                templateUrl: 'auth/register.html',
+                controller: 'AuthController'
+            })
             .otherwise({
                 redirectTo: '/'
             });
@@ -84,6 +88,15 @@ var app = angular.module("sio", [
                 //$rootScope.slide = 'slide-right';
                 $window.history.back();
             };
+
+            $rootScope.logout = function(){
+                $cookies.remove('token');
+                $cookies.remove('userId');
+                $location.path('/');
+            };
+
+            $rootScope.projectURL = myConfig.projectURL;
+            $rootScope.texts = myTexts;
             ////event button item list to move forward
             //$rootScope.next = function() {
             //    $rootScope.slide = 'slide-left';

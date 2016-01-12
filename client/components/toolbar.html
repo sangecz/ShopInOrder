@@ -2,7 +2,7 @@
     <div class="md-toolbar-tools">
 
         <h3>
-            <span>[{{texts.title}}]&nbsp;</span>
+            <span><a href="{{projectURL}}" >[{{texts.title}}]&nbsp;</a></span>
         </h3>
         <h3>
             <span>{{title}} </span>
@@ -11,17 +11,29 @@
 
         <span flex></span>
 
-        <md-button class="md-icon-button" aria-label="Sync" ng-click="sync()">
-            <md-icon md-svg-icon="img/icons/ic_sync_48px.svg"></md-icon>
-        </md-button>
+        <!--<md-button class="md-icon-button" aria-label="Sync" ng-click="sync()">-->
+            <!--<md-icon md-svg-icon="img/icons/ic_sync_48px.svg"></md-icon>-->
+        <!--</md-button>-->
 
         <md-button class="md-icon-button" aria-label="Lists" ng-click="showLists()">
             <md-icon md-svg-icon="img/icons/ic_list_48px.svg"></md-icon>
+            <md-tooltip md-direction="bottom">
+                {{texts.list.title}}
+            </md-tooltip>
         </md-button>
 
         <md-button class="md-icon-button" aria-label="Layouts" ng-click="showLayouts()">
             <md-icon md-svg-icon="img/icons/ic_store_48px.svg"></md-icon>
+            <md-tooltip md-direction="bottom">
+                {{texts.layout.title}}
+            </md-tooltip>
         </md-button>
 
+        <md-button class="md-icon-button" aria-label="Logout" ng-click="logout()">
+            <md-icon style="color: #bbbbbb;" md-svg-icon="img/icons/account-switch.svg"></md-icon>
+            <md-tooltip md-direction="bottom">
+                {{texts.lbl.logout}}
+            </md-tooltip>
+        </md-button>
     </div>
 </md-toolbar>

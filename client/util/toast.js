@@ -1,8 +1,8 @@
 var myToast = {
 
     last : {
-        bottom: false,
-        top: true,
+        bottom: true,
+        top: false,
         left: false,
         right: true
     },
