@@ -5,7 +5,7 @@ app.controller("LayoutController", function LayoutController($scope, $location, 
     self.checkPropreties = function(){
         if(sharedProperties.getProperty() != null){
             $scope.edittedItem =  sharedProperties.getProperty().item;
-            $scope.addedCategories = sharedProperties.getProperty() != null ? sharedProperties.getProperty().categories : [];
+            $scope.addedCategories = sharedProperties.getProperty() != null ? sharedProperties.getProperty().categories : [0];
 
         } else {
             $location.path('/layout');

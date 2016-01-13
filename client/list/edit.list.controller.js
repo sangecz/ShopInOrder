@@ -11,6 +11,7 @@ app.controller("EditListController", function ListController($scope, $location, 
     $scope.newItem.name = '';
     $scope.newItem.category = 0;
     self.itemNeedSync = false;
+    self.ADD_NEW_LAYOUT = 'add_new_layout';
 
     self.checkProperties = function() {
         if(sharedProperties.getProperty() != null && sharedProperties.getProperty().list !== undefined){
@@ -33,6 +34,7 @@ app.controller("EditListController", function ListController($scope, $location, 
                 'token': $cookies.get('token')
             }
         }).then(function (res) {
+
             for(var i = 0; i < res.data.results.length; i++){
                 var r = res.data.results[i];
                 $scope.layouts.push(r);
@@ -49,8 +51,9 @@ app.controller("EditListController", function ListController($scope, $location, 
             return;
         }
         var list = $scope.edittedList;
+        console.log(JSON.stringify(list));
         list.layout_id = {
-            objectId: list.layout_id.objectId,
+            objectId: list.layout_id == null ? '' : list.layout_id.objectId,
             '__type': "Pointer",
             className: "layouts"
         };
@@ -74,7 +77,6 @@ app.controller("EditListController", function ListController($scope, $location, 
             myToast.showToast(myTexts.msg.httpErr + ' msg: ' + res.data.err, $mdToast);
         });
     };
-
 
     self.getItems = function(){
         $http({
@@ -264,14 +266,14 @@ app.controller("EditListController", function ListController($scope, $location, 
     };
 
     $scope.categorizeItems = function (layout_id) {
-        $scope.itemsOrganized = [];
-        for(var k = 0; k < $scope.layouts.length; k++) {
-            if ($scope.layouts[k].objectId == layout_id) {
+        if(layout_id == undefined) return;
+        for (var k = 0; k < $scope.layouts.length; k++) {
+            if ($scope.layouts[k].objectId == layout_id.objectId) {
                 var categories = JSON.parse('[' + $scope.layouts[k].categories + ']');
-                for(var c = 0; c < categories.length; c++){
+                for (var c = 0; c < categories.length; c++) {
                     var catId = categories[c];
-                    for(var cat = 0; cat < $scope.categories.length; cat++){
-                        if(catId == $scope.categories[cat].id){
+                    for (var cat = 0; cat < $scope.categories.length; cat++) {
+                        if (catId == $scope.categories[cat].id) {
                             var o = $scope.categories[cat];
                             o.arr = [];
                             $scope.itemsOrganized.push(o);
@@ -284,7 +286,7 @@ app.controller("EditListController", function ListController($scope, $location, 
         }
 
         function objectPropInArray(list, prop, val) {
-            if (list.length > 0 ) {
+            if (list.length > 0) {
                 for (i in list) {
                     if (list[i][prop] === val) {
                         return true;
@@ -293,26 +295,27 @@ app.controller("EditListController", function ListController($scope, $location, 
             }
             return false;
         }
-        function addRemainingCategories(remaining){
-            for(var i = 0; i < remaining.length; i++){
-                if(!objectPropInArray($scope.itemsOrganized, 'id', remaining[i].id)){
+
+        function addRemainingCategories(remaining) {
+            for (var i = 0; i < remaining.length; i++) {
+                if (!objectPropInArray($scope.itemsOrganized, 'id', remaining[i].id)) {
                     var o = remaining[i];
                     o.arr = [];
                     $scope.itemsOrganized.push(o);
                 }
             }
         }
+
         addRemainingCategories($scope.categories);
 
         // fills items into categorized array
-        for(var j = 0; j < self.items.length; j++){
-            for(var k = 0; k < $scope.itemsOrganized.length; k++){
-                if(self.items[j].category == $scope.itemsOrganized[k].id){
+        for (var j = 0; j < self.items.length; j++) {
+            for (var k = 0; k < $scope.itemsOrganized.length; k++) {
+                if (self.items[j].category == $scope.itemsOrganized[k].id) {
                     $scope.itemsOrganized[k].arr.push(self.items[j]);
                 }
             }
         }
-        //$scope.itemsOrganized = $scope.itemsOrganized;
 
         //console.log("ORGANIZED: " + JSON.stringify($scope.itemsOrganized));
     };

@@ -9,7 +9,8 @@ var myTexts = {
     empty: 'Empty list',
 
     lbl: {
-        logout: 'logout',
+        logout: 'Logout',
+        save: 'Save',
         name: 'Name',
         username: 'Username',
         shopName: 'Name of shop',
@@ -22,13 +23,13 @@ var myTexts = {
         password: 'Password',
         login: 'Login',
         register: 'Register',
-        toggleProp: 'Show/hide properties',
+        toggleProp: 'Properties',
         add: 'Add'
     },
 
     list: {
         title: 'Lists',
-        add: 'And new list',
+        add: 'Add new list',
         edit: 'list'
     },
     category:{
@@ -38,7 +39,7 @@ var myTexts = {
     },
     layout: {
         title: 'Layouts',
-        add: 'And new layout',
+        add: 'Add new layout',
         edit: 'layout'
     },
     item: {

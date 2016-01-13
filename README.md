@@ -1,12 +1,15 @@
 # ShopInOrder 
 Application which helps you organize your shopping lists. Every item may have a category to which it belongs. Every list may have a layout which represents order of categories in your shop. So you first define layout (order of categories) of your shop and then you add this layout to a list. After that, items of the list will be respecting the order of the layout.
 
-Client (angular) at <code>https://sange-icinga.hukot.net:8443</code>
+## Client 
+endpoint: <code>https://sange-icinga.hukot.net:8443</code>
+ 
+Used technologies/assets:
 
-Test user:
-
- * email: <code>sange@seznam.cz</code>
- * password: <code>pm123.</code>
+* [AngularJS 1](https://angularjs.org/)
+* [Angular Material](https://material.angularjs.org)
+* [ui-sortable](https://github.com/angular-ui/ui-sortable)
+* [material icons](https://materialdesignicons.com/)
 
 ## API overview
 
@@ -15,7 +18,7 @@ Application combines two APIs:
 * google sheet API for retrieving categories from public google spreadsheet
 * [Parse API](https://parse.com/) which is used for backing database and user management
 
-and it provides own API, listed methods below.
+and it provides own API, listed methods below, written in [NodeJS](https://nodejs.org)
 
 ### Headers
 These headers are necessary for consuming Parse API. App sends them on behalf of the client, except X-Parse-Session-Token.

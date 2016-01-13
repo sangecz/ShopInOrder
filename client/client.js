@@ -72,6 +72,9 @@ var app = angular.module("sio", [
         //$httpProvider.interceptors.push('authInterceptor');
     })
     .run( function($rootScope, UserService, $location, $cookies, $window, $route) {
+        $rootScope.projectURL = myConfig.projectURL;
+        $rootScope.texts = myTexts;
+
         $rootScope.$on('$routeChangeStart', function(event, next, current) {
             if ( $cookies.get('token') === undefined ) {
                 // no logged user, we should be going to #login
@@ -81,6 +84,9 @@ var app = angular.module("sio", [
                     // not going to #login, we should redirect now
                     $location.path( "/login" );
                 }
+                $rootScope.loggedIn = false;
+            } else {
+                $rootScope.loggedIn = true;
             }
             //$rootScope.slide = '';
             ////event button to move backward
@@ -95,8 +101,7 @@ var app = angular.module("sio", [
                 $location.path('/');
             };
 
-            $rootScope.projectURL = myConfig.projectURL;
-            $rootScope.texts = myTexts;
+
             ////event button item list to move forward
             //$rootScope.next = function() {
             //    $rootScope.slide = 'slide-left';

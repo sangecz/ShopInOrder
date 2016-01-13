@@ -2,7 +2,9 @@
 
 <div class="container-content">
 
-    <md-switch ng-model="data.toggleProp">{{texts.lbl.toggleProp}}</md-switch>
+    <md-switch ng-model="data.toggleProp">
+        <span class="responsive">{{texts.lbl.toggleProp}}</span>
+    </md-switch>
     <form name="myForm" ng-show="data.toggleProp">
         <md-input-container class="md-block">
             <label>{{texts.lbl.name}}</label>
@@ -15,6 +17,7 @@
             <label>{{texts.lbl.desc}}</label>
             <input ng-model="edittedList.desc">
         </md-input-container>
+
         <md-input-container class="md-block">
             <label>{{texts.lbl.layout}}</label>
             <md-select ng-model="edittedList.layout_id.objectId">
@@ -24,7 +27,7 @@
     </form>
 
     <form ng-submit="addItem()">
-        <div layout-gt-xs="row">
+        <div layout-gt-sm="row">
             <md-input-container class="md-block addItem" flex-gt-sm>
                 <label>{{texts.item.add}}</label>
                 <input ng-model="newItem.name">
@@ -35,7 +38,7 @@
                     <md-option value="{{c.id}}" ng-repeat="c in categories">{{c.name}}</md-option>
                 </md-select>
             </md-input-container>
-            <md-input-container class="md-block btn" flex-gt-sm>
+            <md-input-container class="md-block btn responsive" flex-gt-sm>
                 <md-button ng-click="addItem()"
                            class="md-raised">{{texts.lbl.add}}</md-button>
             </md-input-container>

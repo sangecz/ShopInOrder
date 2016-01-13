@@ -1,4 +1,4 @@
-app.controller("AuthController", function AuthController($scope, $location, sharedProperties, $http, $mdToast, $cookies) {
+app.controller("AuthController", function AuthController($rootScope, $scope, $location, sharedProperties, $http, $mdToast, $cookies) {
     var self = this;
 
     $scope.title = myTexts.lbl.login;
@@ -52,7 +52,7 @@ app.controller("AuthController", function AuthController($scope, $location, shar
             }
 
             var minutesLater = new Date();
-            minutesLater.setMinutes(minutesLater.getMinutes() + 120);
+            minutesLater.setMinutes(minutesLater.getMinutes() + 60 * 24);
             $cookies.put('token', res.data.token, { expires: minutesLater});
             $cookies.put('userId', res.data.userId, { expires: minutesLater});
             $location.path('/list');

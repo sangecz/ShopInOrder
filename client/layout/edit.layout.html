@@ -3,7 +3,9 @@
 
 <div class="container-content">
 
-    <md-switch ng-model="data.toggleProp">{{texts.lbl.toggleProp}}</md-switch>
+    <md-switch ng-model="data.toggleProp">
+        <span class="responsive">{{texts.lbl.toggleProp}}</span>
+    </md-switch>
     <form ng-show="data.toggleProp" name="myForm">
         <md-input-container class="md-block">
             <label>{{texts.lbl.shopName}}</label>

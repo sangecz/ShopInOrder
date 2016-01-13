@@ -15,25 +15,30 @@
             <!--<md-icon md-svg-icon="img/icons/ic_sync_48px.svg"></md-icon>-->
         <!--</md-button>-->
 
-        <md-button class="md-icon-button" aria-label="Lists" ng-click="showLists()">
+        <md-button ng-show="loggedIn" class="md-icon-button" aria-label="Lists" ng-click="showLists()">
             <md-icon md-svg-icon="img/icons/ic_list_48px.svg"></md-icon>
             <md-tooltip md-direction="bottom">
                 {{texts.list.title}}
             </md-tooltip>
         </md-button>
 
-        <md-button class="md-icon-button" aria-label="Layouts" ng-click="showLayouts()">
+        <span ng-click="showLists()" class="responsive">{{texts.list.title}}</span>
+
+        <md-button ng-show="loggedIn" class="md-icon-button" aria-label="Layouts" ng-click="showLayouts()">
             <md-icon md-svg-icon="img/icons/ic_store_48px.svg"></md-icon>
             <md-tooltip md-direction="bottom">
                 {{texts.layout.title}}
             </md-tooltip>
         </md-button>
 
-        <md-button class="md-icon-button" aria-label="Logout" ng-click="logout()">
-            <md-icon style="color: #bbbbbb;" md-svg-icon="img/icons/account-switch.svg"></md-icon>
+        <span ng-click="showLayouts()" class="responsive">{{texts.layout.title}}</span>
+
+        <md-button ng-show="loggedIn" class="md-icon-button" aria-label="Logout" ng-click="logout()">
+            <md-icon style="color: #bbbbbb;" md-svg-icon="img/icons/power.svg"></md-icon>
             <md-tooltip md-direction="bottom">
                 {{texts.lbl.logout}}
             </md-tooltip>
         </md-button>
+
     </div>
 </md-toolbar>
