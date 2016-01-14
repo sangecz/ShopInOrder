@@ -31,8 +31,8 @@ These headers are necessary for consuming Parse API. App sends them on behalf of
 
 ### Methods
 <code>URL prefix: 'https://sange-icinga.hukot.net:8443/api/1.0'</code>
-**All methods except the first three require passing session token named "token" from /login or /register request as a header "token".**
-All POST methods accept parameters in body (raw).
+
+Test API with [Postman](https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop), get shared [LINK](https://www.getpostman.com/collections/a91bf813d38e64744526).
 
 | HTTP Method| URL        | Operation                                       | Required params                    |
 | -----------|------------|-------------------------------------------------|------------------------------------|
@@ -61,6 +61,8 @@ All POST methods accept parameters in body (raw).
 | DELETE     | /item/id   | delete item with given id                       |                                    |    
 | DELETE     | /itemDeleteCrossed | delete crossed items                    | objectIds                          |    
 
+* **All methods except the first three require passing session token named "token" from /login or /register request as a header: "token".**
+* all POST methods accept parameters in body (raw).
 * successful **registration requires email verification** (=click on received link in registration email)
 * all **requests** and **responses** are in **JSON**, see examples below
 * **position**: lower number, higher position

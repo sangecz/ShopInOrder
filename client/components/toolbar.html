@@ -22,7 +22,7 @@
             </md-tooltip>
         </md-button>
 
-        <span ng-click="showLists()" class="responsive">{{texts.list.title}}</span>
+        <span ng-show="loggedIn" ng-click="showLists()" class="responsive">{{texts.list.title}}</span>
 
         <md-button ng-show="loggedIn" class="md-icon-button" aria-label="Layouts" ng-click="showLayouts()">
             <md-icon md-svg-icon="img/icons/ic_store_48px.svg"></md-icon>
@@ -31,7 +31,7 @@
             </md-tooltip>
         </md-button>
 
-        <span ng-click="showLayouts()" class="responsive">{{texts.layout.title}}</span>
+        <span ng-show="loggedIn" ng-click="showLayouts()" class="responsive">{{texts.layout.title}}</span>
 
         <md-button ng-show="loggedIn" class="md-icon-button" aria-label="Logout" ng-click="logout()">
             <md-icon style="color: #bbbbbb;" md-svg-icon="img/icons/power.svg"></md-icon>
