@@ -75,6 +75,13 @@ var app = angular.module("sio", [
         $rootScope.projectURL = myConfig.projectURL;
         $rootScope.texts = myTexts;
 
+        $rootScope.logout = function(){
+            $cookies.remove('token');
+            $cookies.remove('userId');
+            $location.path('/');
+        };
+
+
         $rootScope.$on('$routeChangeStart', function(event, next, current) {
             if ( $cookies.get('token') === undefined ) {
                 // no logged user, we should be going to #login
@@ -95,11 +102,6 @@ var app = angular.module("sio", [
                 $window.history.back();
             };
 
-            $rootScope.logout = function(){
-                $cookies.remove('token');
-                $cookies.remove('userId');
-                $location.path('/');
-            };
 
 
             ////event button item list to move forward
